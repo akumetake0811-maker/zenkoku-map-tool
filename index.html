@@ -36,11 +36,27 @@
     box-shadow:0 8px 28px rgba(0,0,0,0.08);
     padding:32px 36px 36px;
   }
-  #hero{
+  #heroWrap{
+    position:relative;
     width:100%;
-    display:block;
+    aspect-ratio:1344/768;
     border-radius:12px;
+    overflow:hidden;
     margin-bottom:18px;
+    background:#f0ece2;
+  }
+  .heroSlide{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    opacity:0;
+    transition:opacity 1.4s ease;
+  }
+  .heroSlide.active{
+    opacity:1;
   }
   h1{
     font-size:22px;
@@ -151,7 +167,10 @@
 </head>
 <body>
 <div id="card">
-  <img id="hero" src="assets/hero.png" alt="日本地図に色鉛筆で色を塗るイラスト">
+  <div id="heroWrap">
+    <img class="heroSlide active" src="assets/hero.png" alt="日本地図に色鉛筆で色を塗るイラスト">
+    <img class="heroSlide" src="assets/hero2.png" alt="関東地方を色鉛筆で彩り豊かに塗るイラスト">
+  </div>
   <h1>まちいろ地図</h1>
   <p class="tagline">日本地図 色分けツール(都道府県・市区町村)</p>
   <p class="lead">訪れた場所の記録や旅行の計画、自由研究の白地図などに使える、無料のオンライン色分けツールです。色を選んで地図をクリックするだけで塗り分けられ、PNG画像として保存もできます。インストール不要、登録も不要です。</p>
@@ -181,5 +200,17 @@
 
   <footer>まちいろ地図 — ②の市区町村verも全国47都道府県に対応しています。<br><a href="faq.html">よくある質問</a></footer>
 </div>
+<script>
+(function(){
+  var slides = document.querySelectorAll('.heroSlide');
+  if(slides.length < 2) return;
+  var current = 0;
+  setInterval(function(){
+    slides[current].classList.remove('active');
+    current = (current + 1) % slides.length;
+    slides[current].classList.add('active');
+  }, 5000);
+})();
+</script>
 </body>
 </html>
