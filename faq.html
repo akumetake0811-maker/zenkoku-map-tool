@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>よくある質問 | 日本地図マップ 色分けツール</title>
+<meta name="description" content="日本地図マップ色分けツールのよくある質問。登録の要不要、スマホ対応、保存方法、商用利用の可否、地図データの出典などをまとめています。">
+<style>
+  :root{
+    --bg:#f7f5f0;
+    --panel:#ffffff;
+    --border:#d8d3c8;
+    --text:#4a4238;
+    --accent:#c98a5e;
+    --accent-dark:#a8663f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    display:flex;
+    justify-content:center;
+    padding:24px;
+  }
+  #card{
+    max-width:640px;
+    width:100%;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 8px 28px rgba(0,0,0,0.08);
+    padding:32px 36px 36px;
+  }
+  #backLink{
+    display:inline-block;
+    margin-bottom:14px;
+    font-size:12.5px;
+    color:#8a8071;
+    text-decoration:none;
+  }
+  #backLink:hover{color:var(--accent-dark);}
+  h1{
+    font-size:22px;
+    margin:0 0 20px;
+    color:var(--accent-dark);
+  }
+  .qa{
+    border-top:1px solid var(--border);
+    padding:18px 0;
+  }
+  .qa:last-child{
+    border-bottom:1px solid var(--border);
+  }
+  .q{
+    display:flex;
+    gap:10px;
+    font-size:15px;
+    font-weight:700;
+    margin:0 0 8px;
+  }
+  .q .mark{
+    color:#fff;
+    background:var(--accent);
+    border-radius:50%;
+    width:22px;height:22px;
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+  }
+  .a{
+    font-size:13.5px;
+    line-height:1.8;
+    color:#5c5346;
+    margin:0 0 0 32px;
+  }
+  .a a{ color:var(--accent-dark); }
+  footer{
+    margin-top:28px;
+    font-size:11px;
+    color:#b0a696;
+    line-height:1.6;
+  }
+</style>
+</head>
+<body>
+<div id="card">
+  <a id="backLink" href="index.html">← マップ一覧に戻る</a>
+  <h1>よくある質問</h1>
+
+  <div class="qa">
+    <p class="q"><span class="mark">Q</span>会員登録は必要ですか?</p>
+    <p class="a">いいえ、登録不要ですぐにお使いいただけます。色を選んで地図をクリックするだけで塗り分けられます。</p>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="mark">Q</span>スマートフォンでも使えますか?</p>
+    <p class="a">はい、スマートフォンやタブレットのブラウザからそのままお使いいただけます。指でタップして塗ったり、ピンチ操作で拡大縮小もできます。</p>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="mark">Q</span>塗った色は保存されますか?</p>
+    <p class="a">現在のバージョンでは、色塗りの状態はブラウザの画面を開いている間だけ保持されます。ページを閉じたり再読み込みすると消えてしまうため、完成したら各マップの「PNG画像として保存」ボタンで画像として保存しておいてください。クラウドへの保存や、後から編集を再開する機能は今のところありません。</p>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="mark">Q</span>塗った地図を他の人と共有できますか?</p>
+    <p class="a">共有用のURLを発行する機能は今のところありません。PNG画像として保存し、その画像をSNSなどで共有していただく形になります。</p>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="mark">Q</span>商用利用はできますか?</p>
+    <p class="a">
+      「地域を選んで市区町村を塗り分ける」verは、歴史的行政区域データセットβ版(geoshape.ex.nii.ac.jp)のデータを使用しており、商用・非商用を問わずご利用いただけます。<br>
+      「全国を1枚で塗り分ける(都道府県ver)」は地球地図日本(国土地理院)のデータを使用しており、非商用利用の場合は出典の明記、商用利用の場合はさらに著作権者への利用報告が必要です。ご利用の際は各データの提供元の利用条件もあわせてご確認ください。
+    </p>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="mark">Q</span>地図データの出典は?</p>
+    <p class="a">
+      市区町村ver: 歴史的行政区域データセットβ版(<a href="https://geoshape.ex.nii.ac.jp/" target="_blank" rel="noopener">geoshape.ex.nii.ac.jp</a>)<br>
+      都道府県ver: 地球地図日本(国土地理院)
+    </p>
+  </div>
+
+  <div class="qa">
+    <p class="q"><span class="mark">Q</span>対応している都道府県は?</p>
+    <p class="a">都道府県verは全国47都道府県に対応しています。市区町村verは現在、東京都・神奈川県・茨城県・栃木県・群馬県・埼玉県・千葉県の7都県のみの対応です。対応地域は今後、順次追加していく予定です。</p>
+  </div>
+
+  <footer>日本地図マップ 色分けツール</footer>
+</div>
+</body>
+</html>

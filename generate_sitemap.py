@@ -9,7 +9,7 @@ SITE_URL = "https://akumetake0811-maker.github.io/zenkoku-map-tool"
 
 
 def main():
-    urls = ["/", "/index.html"]
+    urls = ["/", "/index.html", "/faq.html"]
     if os.path.exists(os.path.join(BASE, "map_nationwide.html")):
         urls.append("/map_nationwide.html")
     for key, pref in PREFECTURES.items():
