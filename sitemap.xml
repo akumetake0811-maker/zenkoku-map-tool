@@ -4,6 +4,14 @@
   <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/index.html</loc></url>
   <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/faq.html</loc></url>
   <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_nationwide.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/region_hokkaido.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/region_tohoku.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/region_kanto.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/region_chubu.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/region_kinki.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/region_chugoku.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/region_shikoku.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/region_kyushu_okinawa.html</loc></url>
   <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_tokyo.html</loc></url>
   <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_kanagawa.html</loc></url>
   <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_ibaraki.html</loc></url>
@@ -11,4 +19,44 @@
   <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_gunma.html</loc></url>
   <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_saitama.html</loc></url>
   <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_chiba.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_hokkaido.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_aomori.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_iwate.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_miyagi.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_akita.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_yamagata.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_fukushima.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_niigata.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_toyama.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_ishikawa.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_fukui.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_yamanashi.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_nagano.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_gifu.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_shizuoka.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_aichi.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_mie.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_shiga.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_kyoto.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_osaka.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_hyogo.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_nara.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_wakayama.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_tottori.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_shimane.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_okayama.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_hiroshima.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_yamaguchi.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_tokushima.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_kagawa.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_ehime.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_kochi.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_fukuoka.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_saga.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_nagasaki.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_kumamoto.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_oita.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_miyazaki.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_kagoshima.html</loc></url>
+  <url><loc>https://akumetake0811-maker.github.io/zenkoku-map-tool/map_okinawa.html</loc></url>
 </urlset>

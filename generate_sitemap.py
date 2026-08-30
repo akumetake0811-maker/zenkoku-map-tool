@@ -2,7 +2,7 @@
 """公開済みページ一覧からsitemap.xmlを生成する"""
 import os
 
-from muni_lists import PREFECTURES
+from muni_lists import PREFECTURES, REGIONS
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 SITE_URL = "https://akumetake0811-maker.github.io/zenkoku-map-tool"
@@ -12,6 +12,10 @@ def main():
     urls = ["/", "/index.html", "/faq.html"]
     if os.path.exists(os.path.join(BASE, "map_nationwide.html")):
         urls.append("/map_nationwide.html")
+    for key, region_name, pref_keys in REGIONS:
+        page = f"region_{key}.html"
+        if os.path.exists(os.path.join(BASE, page)):
+            urls.append(f"/{page}")
     for key, pref in PREFECTURES.items():
         page = f"map_{key}.html"
         if os.path.exists(os.path.join(BASE, page)):

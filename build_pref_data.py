@@ -70,14 +70,16 @@ def compute_core_bbox(pref_dir):
     return lon_min, lon_max, lat_min, lat_max
 
 
+MIN_SCALE_PX_PER_DEG = 2000  # 離島などでbboxが間延びした県でも最低限の解像度を確保する下限
+
+
 def make_proj(lon_min, lon_max, lat_min, lat_max):
     coslat = math.cos(math.radians((lat_min + lat_max) / 2))
     w_deg = (lon_max - lon_min) * coslat
     h_deg = lat_max - lat_min
-    if w_deg >= h_deg:
-        scale = (TARGET_MAX_DIM - 2 * MARGIN) / w_deg
-    else:
-        scale = (TARGET_MAX_DIM - 2 * MARGIN) / h_deg
+    scale = (TARGET_MAX_DIM - 2 * MARGIN) / max(w_deg, h_deg)
+    if scale < MIN_SCALE_PX_PER_DEG:
+        scale = MIN_SCALE_PX_PER_DEG
     svg_w = w_deg * scale + 2 * MARGIN
     svg_h = h_deg * scale + 2 * MARGIN
 
@@ -173,17 +175,22 @@ def geometry_to_path_and_label(geom, proj):
     return " ".join(parts), (round(cx, 2), round(cy, 2)), core_bbox
 
 
-def compute_default_view(municipalities, svg_w, svg_h):
-    """本土から極端に離れた離島(例: 東京都小笠原村の沖ノ鳥島・南鳥島)が初期表示を
-    間延びさせないよう、主要クラスタだけに絞った初期viewBoxを計算する。
-    沖縄のように離島群自体が県の主要な構成要素で、全体の縦横比がそこまで
-    極端でない場合は絞り込まず全域を初期表示にする(実在の人口集積地を
-    デフォルトで見えなくしないため)。"""
-    aspect = max(svg_w, svg_h) / max(1.0, min(svg_w, svg_h))
-    if aspect < 4.0:
-        return {"x": 0, "y": 0, "w": svg_w, "h": svg_h}
 
-    pts = [m for m in municipalities if m["_core_bbox"] is not None]
+# 中央値+距離のクラスタ判定だけでは上手く主要クラスタを検出できない県
+# (複数方向に離島群が散らばっているケース)向けに、初期表示の枠計算からのみ
+# 除外する市町村名を指定する。描画自体はされ、ズームすれば見える。
+DEFAULT_VIEW_EXCLUDE = {
+    "okinawa": {"宮古島市", "石垣市", "竹富町", "与那国町", "多良間村", "北大東村", "南大東村"},
+}
+
+
+def compute_default_view(municipalities, svg_w, svg_h, key=None):
+    """本土から極端に離れた離島(例: 東京都小笠原村の沖ノ鳥島・南鳥島、沖縄県の
+    宮古・八重山・大東諸島)が初期表示を間延びさせないよう、主要クラスタだけに
+    絞った初期viewBoxを計算する。県全体が単一クラスタで収まる場合は末尾の
+    90%チェックで自動的に全域表示にフォールバックする。"""
+    exclude_names = DEFAULT_VIEW_EXCLUDE.get(key, set())
+    pts = [m for m in municipalities if m["_core_bbox"] is not None and m["name"] not in exclude_names]
     if len(pts) <= 1:
         return {"x": 0, "y": 0, "w": svg_w, "h": svg_h}
 
@@ -248,7 +255,7 @@ def build_pref(key):
             "_core_bbox": core_bbox,
         })
 
-    default_view = compute_default_view(municipalities, svg_w, svg_h)
+    default_view = compute_default_view(municipalities, svg_w, svg_h, key=key)
     for m in municipalities:
         del m["_core_bbox"]
 
