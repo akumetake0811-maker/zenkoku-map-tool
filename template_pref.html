@@ -76,6 +76,20 @@
   }
   body.hide-labels .label{display:none;}
   .label.toodense{display:none;}
+  .insetBracket{
+    fill:none;
+    stroke:#3a352c;
+    stroke-width:2;
+    stroke-linejoin:miter;
+  }
+  .prefWatermark{
+    font-size:120px;
+    font-weight:700;
+    fill:#3a352c;
+    opacity:0.13;
+    text-anchor:middle;
+    dominant-baseline:middle;
+  }
   #sidebar{
     width:300px;
     min-width:300px;
@@ -225,6 +239,9 @@
 
 <div id="mapPane">
   <svg id="mapSvg" viewBox="0 0 __SVG_W__ __SVG_H__" xmlns="http://www.w3.org/2000/svg">
+    <g id="decorLayer" pointer-events="none">
+      __EXTRA_DECOR__
+    </g>
     <g id="curLayer">
       __CUR_PATHS__
     </g>
@@ -511,7 +528,9 @@
     var styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
     styleEl.textContent =
       '.muni{fill:#eef0e8;stroke:#6b6355;stroke-width:0.7;}' +
-      '.label{text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;paint-order:stroke;stroke:#fdfcf8;stroke-linejoin:round;font-weight:600;fill:#4a4238;}';
+      '.label{text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;paint-order:stroke;stroke:#fdfcf8;stroke-linejoin:round;font-weight:600;fill:#4a4238;}' +
+      '.insetBracket{fill:none;stroke:#3a352c;stroke-width:2;stroke-linejoin:miter;}' +
+      '.prefWatermark{font-size:120px;font-weight:700;fill:#3a352c;opacity:0.13;text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;}';
     clone.insertBefore(styleEl, clone.firstChild);
 
     var exportFontUnits = TARGET_LABEL_SCREEN_PX * labelScaleMultiplier;

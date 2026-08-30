@@ -76,6 +76,20 @@
   }
   body.hide-labels .label{display:none;}
   .label.toodense{display:none;}
+  .insetBracket{
+    fill:none;
+    stroke:#3a352c;
+    stroke-width:2;
+    stroke-linejoin:miter;
+  }
+  .prefWatermark{
+    font-size:120px;
+    font-weight:700;
+    fill:#3a352c;
+    opacity:0.13;
+    text-anchor:middle;
+    dominant-baseline:middle;
+  }
   #sidebar{
     width:300px;
     min-width:300px;
@@ -225,6 +239,9 @@
 
 <div id="mapPane">
   <svg id="mapSvg" viewBox="0 0 2800.0 1422.95" xmlns="http://www.w3.org/2000/svg">
+    <g id="decorLayer" pointer-events="none">
+      
+    </g>
     <g id="curLayer">
       <path id="m_13101" class="muni" data-name="千代田区" data-code="13101" d="M2394.39,722.85 L2392.77,727.48 L2394.49,729.31 L2387.81,735.40 L2353.61,750.49 L2361.46,764.88 L2359.84,786.11 L2341.04,806.64 L2314.95,815.59 L2300.97,812.46 L2295.70,816.72 L2293.77,813.65 L2283.13,810.41 L2271.43,801.41 L2264.94,784.49 L2255.93,783.85 L2247.16,768.22 L2245.79,761.27 L2249.29,748.44 L2267.22,734.49 L2285.72,706.46 L2284.50,705.23 L2291.09,700.43 L2299.70,700.05 L2322.70,704.96 L2334.30,705.39 L2343.63,710.94 L2354.06,711.96 L2352.90,707.54 L2348.74,704.69 L2349.76,701.72 L2353.51,701.35 L2353.40,698.87 L2358.62,699.19 L2359.28,692.29 L2367.49,693.15 L2366.78,700.05 L2369.26,700.32 L2367.89,704.36 L2377.67,708.78 L2388.31,709.75 L2387.10,717.62 L2394.70,718.37 L2394.39,722.85 Z"><title>千代田区</title></path>
 <path id="m_13102" class="muni" data-name="中央区" data-code="13102" d="M2412.38,729.37 L2413.09,742.14 L2423.22,759.65 L2422.21,768.43 L2411.77,785.73 L2407.46,799.69 L2407.82,810.25 L2412.83,830.57 L2414.30,863.22 L2411.31,863.49 L2366.68,898.79 L2357.46,887.58 L2366.73,879.87 L2363.54,875.99 L2354.27,883.70 L2351.28,881.33 L2351.07,866.89 L2353.51,864.89 L2357.91,870.17 L2360.75,867.80 L2351.02,856.76 L2343.58,863.54 L2327.82,853.68 L2325.34,850.23 L2325.18,820.00 L2314.55,815.69 L2341.04,806.64 L2359.84,786.11 L2361.46,764.88 L2353.61,750.49 L2387.81,735.40 L2394.49,729.31 L2392.77,727.48 L2394.39,722.85 L2412.38,729.37 Z"><title>中央区</title></path>
@@ -615,7 +632,9 @@
     var styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
     styleEl.textContent =
       '.muni{fill:#eef0e8;stroke:#6b6355;stroke-width:0.7;}' +
-      '.label{text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;paint-order:stroke;stroke:#fdfcf8;stroke-linejoin:round;font-weight:600;fill:#4a4238;}';
+      '.label{text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;paint-order:stroke;stroke:#fdfcf8;stroke-linejoin:round;font-weight:600;fill:#4a4238;}' +
+      '.insetBracket{fill:none;stroke:#3a352c;stroke-width:2;stroke-linejoin:miter;}' +
+      '.prefWatermark{font-size:120px;font-weight:700;fill:#3a352c;opacity:0.13;text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;}';
     clone.insertBefore(styleEl, clone.firstChild);
 
     var exportFontUnits = TARGET_LABEL_SCREEN_PX * labelScaleMultiplier;

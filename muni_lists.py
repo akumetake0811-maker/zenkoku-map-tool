@@ -856,6 +856,11 @@ PREFECTURES = {
 
 KANTO_5 = ["ibaraki", "tochigi", "gunma", "saitama", "chiba"]
 
+def region_label(key, name):
+    """地方の表示名。北海道だけは「地方」を付けない(北海道地方とは言わないため)。"""
+    return name if key == "hokkaido" else name + "地方"
+
+
 REGIONS = [
     ("hokkaido", "北海道", ["hokkaido"]),
     ("tohoku", "東北", ["aomori", "iwate", "miyagi", "akita", "yamagata", "fukushima"]),

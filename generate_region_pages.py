@@ -3,7 +3,7 @@
 import json
 import os
 
-from muni_lists import PREFECTURES, REGIONS
+from muni_lists import PREFECTURES, REGIONS, region_label
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE, "data")
@@ -33,7 +33,7 @@ def main():
         if not cards:
             continue
         out = (
-            tpl.replace("__REGION_NAME__", region_name)
+            tpl.replace("__REGION_LABEL__", region_label(key, region_name))
             .replace("__PREF_CARDS__", "\n    ".join(cards))
         )
         out_path = os.path.join(BASE, f"region_{key}.html")

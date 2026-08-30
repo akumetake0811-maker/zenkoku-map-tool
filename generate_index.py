@@ -3,7 +3,7 @@
 import json
 import os
 
-from muni_lists import PREFECTURES, REGIONS
+from muni_lists import PREFECTURES, REGIONS, region_label
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE, "data")
@@ -30,8 +30,7 @@ def main():
             continue
         region_cards.append(
             f'<a class="prefcard" href="region_{key}.html">'
-            f'<span class="pname">{region_name}</span>'
-            f'<span class="pcount">{built_count}都道府県対応</span></a>'
+            f'<span class="pname">{region_label(key, region_name)}</span></a>'
         )
 
     template_path = os.path.join(BASE, "index_template.html")

@@ -53,6 +53,7 @@ def main():
             .replace("__CUR_LABELS__", labels_svg)
             .replace("__CUR_LIST__", listbtns)
             .replace("__MUNI_COUNT__", str(len(data["municipalities"])))
+            .replace("__EXTRA_DECOR__", data.get("extra_decor", ""))
         )
 
         out_path = os.path.join(BASE, f"map_{key}.html")
