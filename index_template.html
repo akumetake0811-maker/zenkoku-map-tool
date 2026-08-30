@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>市区町村マップ 色分けツール</title>
+<style>
+  :root{
+    --bg:#f7f5f0;
+    --panel:#ffffff;
+    --border:#d8d3c8;
+    --text:#4a4238;
+    --accent:#c98a5e;
+    --accent-dark:#a8663f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  #card{
+    max-width:640px;
+    width:100%;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 8px 28px rgba(0,0,0,0.08);
+    padding:32px 36px 36px;
+  }
+  h1{
+    font-size:22px;
+    margin:0 0 6px;
+    color:var(--accent-dark);
+  }
+  p.lead{
+    font-size:13.5px;
+    line-height:1.7;
+    color:#8a8071;
+    margin:0 0 26px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  a.prefcard{
+    display:block;
+    text-decoration:none;
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px 16px;
+    background:#faf8f3;
+    transition:transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  a.prefcard:hover{
+    background:#fff;
+    transform:translateY(-2px);
+    box-shadow:0 6px 16px rgba(0,0,0,0.08);
+    border-color:var(--accent);
+  }
+  a.prefcard .pname{
+    font-size:16px;
+    font-weight:600;
+    color:var(--accent-dark);
+    display:block;
+    margin-bottom:4px;
+  }
+  a.prefcard .pcount{
+    font-size:11.5px;
+    color:#a89c8a;
+  }
+  a.prefcard.featured{
+    grid-column:1 / -1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    background:#fbf2e8;
+    border-color:var(--accent);
+    padding:22px 20px;
+  }
+  a.prefcard.featured .pname{
+    font-size:19px;
+  }
+  .group{
+    margin-bottom:26px;
+  }
+  .group:last-child{
+    margin-bottom:0;
+  }
+  .group-head{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    margin-bottom:4px;
+  }
+  .group-num{
+    font-size:12px;
+    font-weight:700;
+    color:#fff;
+    background:var(--accent);
+    border-radius:999px;
+    width:18px;height:18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+  .group-title{
+    font-size:14.5px;
+    font-weight:700;
+    color:var(--text);
+  }
+  .group-desc{
+    font-size:12px;
+    line-height:1.6;
+    color:#a89c8a;
+    margin:0 0 12px 26px;
+  }
+  footer{
+    margin-top:28px;
+    font-size:11px;
+    color:#b0a696;
+    line-height:1.6;
+  }
+</style>
+</head>
+<body>
+<div id="card">
+  <h1>日本地図マップ 色分けツール</h1>
+  <p class="lead">色を選んで地図をクリックすると塗り分けられます。PNG画像としての保存にも対応しています。</p>
+
+  <div class="group">
+    <div class="group-head"><span class="group-num">1</span><span class="group-title">全国を1枚で塗り分ける</span></div>
+    <p class="group-desc">日本地図1枚の中で、47都道府県を単位として塗り分けます。</p>
+    <div class="grid">
+      __NATIONWIDE_CARD__
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-head"><span class="group-num">2</span><span class="group-title">地域を選んで市区町村を塗り分ける</span></div>
+    <p class="group-desc">都道府県を選ぶと、その中の市区町村を1つずつ塗り分けられる詳細マップが開きます。</p>
+    <div class="grid">
+      __PREF_CARDS__
+    </div>
+  </div>
+
+  <footer>②の市区町村verは現在、試験公開中のサンプル県のみ対応しています。今後、対応都道府県を順次追加予定です。</footer>
+</div>
+</body>
+</html>

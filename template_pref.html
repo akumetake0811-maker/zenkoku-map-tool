@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>__PREF_NAME__マップ 色分けツール</title>
+<style>
+  :root{
+    --bg:#f7f5f0;
+    --panel:#ffffff;
+    --border:#d8d3c8;
+    --text:#4a4238;
+    --accent:#c98a5e;
+    --accent-dark:#a8663f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    display:flex;
+    height:100vh;
+    overflow:hidden;
+  }
+  #mapPane{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    overflow:auto;
+    background:
+      radial-gradient(circle at 20% 20%, #fffdf8 0%, var(--bg) 70%);
+  }
+  #mapSvg{
+    background:#fdfcf8;
+    border:1px solid var(--border);
+    border-radius:8px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.08);
+    width:100%;
+    height:100%;
+    max-width:100%;
+    max-height:100%;
+    cursor:grab;
+    touch-action:none;
+  }
+  #mapSvg.panning{
+    cursor:grabbing;
+  }
+  .muni{
+    fill:#eef0e8;
+    stroke:#6b6355;
+    stroke-width:0.7;
+    cursor:pointer;
+    transition:fill 0.15s ease;
+  }
+  .muni:hover{
+    filter:brightness(0.94);
+  }
+  .muni.flash{
+    stroke:#1a73e8 !important;
+    stroke-width:2.5 !important;
+  }
+  .label{
+    pointer-events:none;
+    text-anchor:middle;
+    dominant-baseline:middle;
+    font-family:inherit;
+    paint-order:stroke;
+    stroke:#fdfcf8;
+    stroke-linejoin:round;
+    font-weight:600;
+    fill:#4a4238;
+  }
+  body.hide-labels .label{display:none;}
+  .label.toodense{display:none;}
+  #sidebar{
+    width:300px;
+    min-width:300px;
+    background:var(--panel);
+    border-left:1px solid var(--border);
+    padding:14px 14px 24px;
+    overflow-y:auto;
+  }
+  #sidebar h1{
+    font-size:16px;
+    margin:2px 0 4px;
+    color:var(--accent-dark);
+  }
+  #sidebar p.hint{
+    font-size:11.5px;
+    line-height:1.6;
+    color:#8a8071;
+    margin:0 0 14px;
+  }
+  .section{
+    margin-bottom:16px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px 12px;
+    background:#fffefb;
+  }
+  .section h2{
+    font-size:12.5px;
+    margin:0 0 8px;
+    color:var(--accent-dark);
+    letter-spacing:0.02em;
+  }
+  #palette{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:8px;
+  }
+  .swatch{
+    width:26px;height:26px;
+    border-radius:50%;
+    border:2px solid #fff;
+    outline:1px solid var(--border);
+    cursor:pointer;
+    padding:0;
+  }
+  .swatch.selected{
+    outline:2px solid var(--accent-dark);
+    transform:scale(1.12);
+  }
+  #customColorRow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:4px;
+  }
+  #customColor{
+    width:34px;height:26px;border:1px solid var(--border);border-radius:6px;padding:0;cursor:pointer;
+  }
+  #currentColorLabel{
+    font-size:11px;color:#8a8071;
+  }
+  .toolbtn{
+    width:100%;
+    padding:8px 10px;
+    margin-bottom:6px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:#faf8f3;
+    color:var(--text);
+    font-size:12.5px;
+    cursor:pointer;
+    text-align:left;
+  }
+  .toolbtn:hover{background:#f1ede3;}
+  .toolbtn.active{
+    background:var(--accent);
+    color:#fff;
+    border-color:var(--accent-dark);
+  }
+  #eraserBtn.active{background:#8a8071;border-color:#6b6355;color:#fff;}
+  label.chk{
+    display:flex;align-items:center;gap:6px;font-size:12px;margin-top:6px;color:#6b6355;
+  }
+  .listgrid{
+    display:flex;flex-wrap:wrap;gap:5px;
+  }
+  .listbtn{
+    font-size:11.5px;
+    padding:4px 8px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:#faf8f3;
+    cursor:pointer;
+    color:var(--text);
+  }
+  .listbtn:hover{background:var(--accent);color:#fff;border-color:var(--accent-dark);}
+  .sliderRow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:8px;
+    font-size:12px;
+    color:#6b6355;
+  }
+  .sliderLabel{
+    white-space:nowrap;
+  }
+  #labelSizeSlider{
+    flex:1;
+    accent-color:var(--accent-dark);
+  }
+  #labelSizeValue{
+    width:38px;
+    text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+  .zoomrow{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .zbtn{
+    width:auto;
+    flex:1 1 auto;
+    margin-bottom:0;
+    text-align:center;
+    white-space:nowrap;
+  }
+  #exportBtn{
+    background:var(--accent-dark);
+    color:#fff;
+    border-color:var(--accent-dark);
+  }
+  #exportBtn:hover{background:#8c5330;}
+  #backLink{
+    display:inline-block;
+    margin-bottom:10px;
+    font-size:12px;
+    color:#8a8071;
+    text-decoration:none;
+  }
+  #backLink:hover{color:var(--accent-dark);}
+</style>
+</head>
+<body>
+
+<div id="mapPane">
+  <svg id="mapSvg" viewBox="0 0 __SVG_W__ __SVG_H__" xmlns="http://www.w3.org/2000/svg">
+    <g id="curLayer">
+      __CUR_PATHS__
+    </g>
+    <g id="labelLayer">
+      __CUR_LABELS__
+    </g>
+  </svg>
+</div>
+
+<div id="sidebar">
+  <a id="backLink" href="index.html">← 都道府県を選び直す</a>
+  <h1>__PREF_NAME__マップ 色分けツール</h1>
+  <p class="hint">色を選んでから、地図または下のボタンをクリックすると塗りつぶせます。</p>
+
+  <div class="section">
+    <h2>① 色を選ぶ</h2>
+    <div id="palette"></div>
+    <div id="customColorRow">
+      <input type="color" id="customColor" value="#ffd966">
+      <span id="currentColorLabel">現在の色</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>② 塗る / 消す</h2>
+    <button class="toolbtn active" id="paintModeBtn">🖌 塗るモード(選択中)</button>
+    <button class="toolbtn" id="eraserBtn">🧹 消しゴムモード</button>
+    <button class="toolbtn" id="resetBtn">↺ 全部リセット</button>
+    <label class="chk"><input type="checkbox" id="toggleLabels" checked> 市区町村名を表示</label>
+    <div class="sliderRow">
+      <label for="labelSizeSlider" class="sliderLabel">文字サイズ</label>
+      <input type="range" id="labelSizeSlider" min="0.5" max="2.5" step="0.1" value="1">
+      <span id="labelSizeValue">100%</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>③ 表示操作</h2>
+    <div class="zoomrow">
+      <button class="toolbtn zbtn" id="zoomInBtn">🔍＋ 拡大</button>
+      <button class="toolbtn zbtn" id="zoomOutBtn">🔍－ 縮小</button>
+      <button class="toolbtn zbtn" id="zoomResetBtn">⤾ 表示リセット</button>
+    </div>
+    <p class="hint" style="margin:6px 0 0;">マウスホイールで拡大縮小、ドラッグで移動できます。</p>
+  </div>
+
+  <div class="section">
+    <h2>④ __MUNI_COUNT__市区町村から選ぶ</h2>
+    <div class="listgrid">__CUR_LIST__</div>
+  </div>
+
+  <div class="section">
+    <h2>⑤ 書き出し</h2>
+    <button class="toolbtn" id="exportBtn">🖼 PNG画像として保存</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var SVG_W = __SVG_W__, SVG_H = __SVG_H__;
+  var DEFAULT_VIEW = __DEFAULT_VIEW__;
+  var BASE_FONT = __BASE_FONT__;
+
+  var PALETTE = [
+    "#e57373","#f2a65a","#f7d060","#a3d977","#6bbf8e",
+    "#5fb3c9","#6d9de8","#9e86d6","#d18ac4","#c9a06b",
+    "#b0b0b0","#ffffff"
+  ];
+
+  var state = {
+    color: "#ffd966",
+    eraser: false
+  };
+
+  var paletteEl = document.getElementById('palette');
+  PALETTE.forEach(function(c){
+    var b = document.createElement('button');
+    b.className = 'swatch';
+    b.style.background = c;
+    b.dataset.color = c;
+    b.title = c;
+    b.addEventListener('click', function(){
+      selectColor(c);
+    });
+    paletteEl.appendChild(b);
+  });
+
+  var customColor = document.getElementById('customColor');
+  customColor.addEventListener('input', function(){
+    selectColor(customColor.value);
+  });
+
+  function selectColor(c){
+    state.color = c;
+    state.eraser = false;
+    document.querySelectorAll('.swatch').forEach(function(s){
+      s.classList.toggle('selected', s.dataset.color.toLowerCase() === c.toLowerCase());
+    });
+    updateModeButtons();
+  }
+
+  var paintModeBtn = document.getElementById('paintModeBtn');
+  var eraserBtn = document.getElementById('eraserBtn');
+  paintModeBtn.addEventListener('click', function(){
+    state.eraser = false;
+    updateModeButtons();
+  });
+  eraserBtn.addEventListener('click', function(){
+    state.eraser = true;
+    updateModeButtons();
+  });
+  function updateModeButtons(){
+    paintModeBtn.classList.toggle('active', !state.eraser);
+    eraserBtn.classList.toggle('active', state.eraser);
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    if(!confirm('すべての色塗りをリセットします。よろしいですか？')) return;
+    document.querySelectorAll('.muni').forEach(function(p){
+      p.style.fill = '';
+    });
+  });
+
+  document.getElementById('toggleLabels').addEventListener('change', function(e){
+    document.body.classList.toggle('hide-labels', !e.target.checked);
+  });
+
+  var labelScaleMultiplier = 1;
+  var labelSizeSlider = document.getElementById('labelSizeSlider');
+  var labelSizeValue = document.getElementById('labelSizeValue');
+  labelSizeSlider.addEventListener('input', function(e){
+    labelScaleMultiplier = parseFloat(e.target.value);
+    labelSizeValue.textContent = Math.round(labelScaleMultiplier * 100) + '%';
+    updateLabels();
+  });
+
+  // ---- ズーム・パン(viewBox操作) ----
+  var svgEl = document.getElementById('mapSvg');
+  var vb = {x:DEFAULT_VIEW.x, y:DEFAULT_VIEW.y, w:DEFAULT_VIEW.w, h:DEFAULT_VIEW.h};
+  var MIN_VB_W = SVG_W / 40;
+  var MAX_VB_W = SVG_W;
+
+  var labelEls = document.querySelectorAll('.label');
+  var DECLUTTER_THRESHOLD_PX = 30; // 画面上でこれより小さく見える市町村はラベルを自動で隠す
+  var TARGET_LABEL_SCREEN_PX = BASE_FONT; // ラベル文字の目標「画面上での」大きさ(ズームしても一定に保つ)
+
+  // 文字サイズはSVGのviewBox(ズーム)にそのまま追従させると、拡大するほど
+  // 際限なく巨大化してしまう。地図アプリの地名表示のように、画面上では
+  // 常にほぼ一定のサイズに見えるよう、現在のズーム倍率から逆算してSVG座標系での
+  // フォントサイズを毎回計算し直す。
+  function updateLabels(){
+    var scale = svgEl.clientWidth / vb.w;
+    if(!scale || !isFinite(scale) || scale <= 0) return;
+    var fontUnits = (TARGET_LABEL_SCREEN_PX * labelScaleMultiplier) / scale;
+    var strokeUnits = fontUnits * 0.15;
+    labelEls.forEach(function(t){
+      t.setAttribute('font-size', fontUnits.toFixed(2));
+      t.setAttribute('stroke-width', strokeUnits.toFixed(2));
+      var w = parseFloat(t.dataset.w) || 0;
+      var h = parseFloat(t.dataset.h) || 0;
+      var onscreen = Math.sqrt(w * h) * scale;
+      t.classList.toggle('toodense', onscreen < DECLUTTER_THRESHOLD_PX);
+    });
+  }
+
+  function updateViewBox(){
+    svgEl.setAttribute('viewBox', vb.x + ' ' + vb.y + ' ' + vb.w + ' ' + vb.h);
+    updateLabels();
+  }
+  updateViewBox();
+
+  function clientToSvgPoint(clientX, clientY){
+    var pt = svgEl.createSVGPoint();
+    pt.x = clientX; pt.y = clientY;
+    var ctm = svgEl.getScreenCTM();
+    if(!ctm) return {x: vb.x + vb.w/2, y: vb.y + vb.h/2};
+    var sp = pt.matrixTransform(ctm.inverse());
+    return {x: sp.x, y: sp.y};
+  }
+
+  function zoomAt(factor, cx, cy){
+    var newW = Math.max(MIN_VB_W, Math.min(MAX_VB_W, vb.w * factor));
+    factor = newW / vb.w;
+    var newH = vb.h * factor;
+    vb.x = cx - (cx - vb.x) * factor;
+    vb.y = cy - (cy - vb.y) * factor;
+    vb.w = newW;
+    vb.h = newH;
+    updateViewBox();
+  }
+
+  svgEl.addEventListener('wheel', function(e){
+    e.preventDefault();
+    var factor = e.deltaY < 0 ? 0.88 : (1/0.88);
+    var p = clientToSvgPoint(e.clientX, e.clientY);
+    zoomAt(factor, p.x, p.y);
+  }, {passive:false});
+
+  document.getElementById('zoomInBtn').addEventListener('click', function(){
+    zoomAt(0.75, vb.x + vb.w/2, vb.y + vb.h/2);
+  });
+  document.getElementById('zoomOutBtn').addEventListener('click', function(){
+    zoomAt(1/0.75, vb.x + vb.w/2, vb.y + vb.h/2);
+  });
+  document.getElementById('zoomResetBtn').addEventListener('click', function(){
+    vb = {x:DEFAULT_VIEW.x, y:DEFAULT_VIEW.y, w:DEFAULT_VIEW.w, h:DEFAULT_VIEW.h};
+    updateViewBox();
+  });
+
+  var isPanning = false, panStart = null, vbStart = null;
+  svgEl.addEventListener('pointerdown', function(e){
+    if(e.button !== 0) return;
+    isPanning = true;
+    panStart = {x:e.clientX, y:e.clientY};
+    vbStart = {x:vb.x, y:vb.y};
+    svgEl.classList.add('panning');
+  });
+  window.addEventListener('pointermove', function(e){
+    if(!isPanning) return;
+    var dx = e.clientX - panStart.x;
+    var dy = e.clientY - panStart.y;
+    var scale = vb.w / svgEl.clientWidth;
+    vb.x = vbStart.x - dx * scale;
+    vb.y = vbStart.y - dy * scale;
+    updateViewBox();
+  });
+  function endPan(){
+    isPanning = false;
+    svgEl.classList.remove('panning');
+  }
+  window.addEventListener('pointerup', endPan);
+  window.addEventListener('pointercancel', endPan);
+
+  function applyPaint(el){
+    if(state.eraser){
+      el.style.fill = '';
+    } else {
+      el.style.fill = state.color;
+    }
+  }
+
+  document.querySelectorAll('.muni').forEach(function(p){
+    p.addEventListener('click', function(e){
+      e.stopPropagation();
+      applyPaint(p);
+    });
+  });
+
+  function flash(el){
+    el.classList.add('flash');
+    setTimeout(function(){ el.classList.remove('flash'); }, 500);
+  }
+
+  document.querySelectorAll('.listbtn').forEach(function(btn){
+    var targetId = btn.dataset.target;
+    btn.addEventListener('click', function(){
+      var el = document.getElementById(targetId);
+      if(el){
+        applyPaint(el);
+        el.scrollIntoView({block:'nearest', inline:'nearest', behavior:'smooth'});
+        flash(el);
+      }
+    });
+    btn.addEventListener('mouseenter', function(){
+      var el = document.getElementById(targetId);
+      if(el) el.classList.add('flash');
+    });
+    btn.addEventListener('mouseleave', function(){
+      var el = document.getElementById(targetId);
+      if(el) el.classList.remove('flash');
+    });
+  });
+
+  document.getElementById('exportBtn').addEventListener('click', function(){
+    var svg = document.getElementById('mapSvg');
+    var clone = svg.cloneNode(true);
+    clone.setAttribute('width', SVG_W);
+    clone.setAttribute('height', SVG_H);
+    clone.setAttribute('viewBox', '0 0 ' + SVG_W + ' ' + SVG_H);
+
+    // 書き出したSVGは独立した画像として描画されるため、ページ側のCSSは効かない。
+    // 見た目に必要なスタイルをSVG自身に埋め込む。書き出しは常に全域表示なので、
+    // 文字サイズ・間引きも「全域を1画面に収めた場合」の基準で計算し直す。
+    var styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    styleEl.textContent =
+      '.muni{fill:#eef0e8;stroke:#6b6355;stroke-width:0.7;}' +
+      '.label{text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;paint-order:stroke;stroke:#fdfcf8;stroke-linejoin:round;font-weight:600;fill:#4a4238;}';
+    clone.insertBefore(styleEl, clone.firstChild);
+
+    var exportFontUnits = TARGET_LABEL_SCREEN_PX * labelScaleMultiplier;
+    var exportStrokeUnits = exportFontUnits * 0.15;
+    clone.querySelectorAll('.label').forEach(function(t){
+      t.setAttribute('font-size', exportFontUnits.toFixed(2));
+      t.setAttribute('stroke-width', exportStrokeUnits.toFixed(2));
+      var w = parseFloat(t.dataset.w) || 0;
+      var h = parseFloat(t.dataset.h) || 0;
+      if(Math.sqrt(w * h) < DECLUTTER_THRESHOLD_PX){
+        t.style.display = 'none';
+      }
+    });
+
+    if(document.body.classList.contains('hide-labels')){
+      clone.querySelectorAll('.label').forEach(function(t){ t.style.display = 'none'; });
+    }
+    var svgData = new XMLSerializer().serializeToString(clone);
+    var svgBlob = new Blob(['<?xml version="1.0" standalone="no"?>\r\n' + svgData], {type:'image/svg+xml;charset=utf-8'});
+    var url = URL.createObjectURL(svgBlob);
+    var img = new Image();
+    img.onload = function(){
+      var scale = 2;
+      var canvas = document.createElement('canvas');
+      canvas.width = SVG_W * scale;
+      canvas.height = SVG_H * scale;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(function(blob){
+        var link = document.createElement('a');
+        link.download = '__PREF_NAME__マップ.png';
+        link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    };
+    img.onerror = function(err){
+      alert('PNG書き出しに失敗しました。ブラウザのセキュリティ制限の可能性があります。');
+    };
+    img.src = url;
+  });
+
+  selectColor(state.color);
+})();
+</script>
+</body>
+</html>

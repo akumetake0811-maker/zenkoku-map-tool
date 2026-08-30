@@ -1,0 +1,12 @@
+# ビルド用の生データ・中間ファイル(再生成可能なので公開リポジトリには含めない)
+geojson/
+data/
+
+# 作業ゴミ
+削除用フォルダ/
+__pycache__/
+*.pyc
+
+# 今回のスコープ外(ファイルは残すがGitHubには送らない)
+map_iwate.html
+map_okinawa.html
