@@ -14,6 +14,16 @@
 <title>まちいろ地図 | 日本地図の色分けツール(都道府県・市区町村)</title>
 <meta name="description" content="「まちいろ地図」は、都道府県や市区町村を自由に色分けできる無料の白地図ツールです。全国47都道府県を1枚で塗り分けるか、地域を選んで市区町村を細かく塗り分けるか選べます。旅行の記録や学習用の白地図としても使えます。">
 <meta name="google-site-verification" content="4cWqwQrx9jBybWZ6VdfizHspdWub84qxLHmc37yVTyE" />
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon-32x32.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="まちいろ地図">
+<meta property="og:title" content="まちいろ地図 | 日本地図の色分けツール(都道府県・市区町村)">
+<meta property="og:description" content="都道府県や市区町村を自由に色分けできる無料の白地図ツールです。全国47都道府県を1枚で塗り分けるか、地域を選んで市区町村を細かく塗り分けるか選べます。">
+<meta property="og:url" content="https://akumetake0811-maker.github.io/zenkoku-map-tool/">
+<meta property="og:image" content="https://akumetake0811-maker.github.io/zenkoku-map-tool/assets/hero.png">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root{
     --bg:#f7f5f0;
@@ -59,9 +69,9 @@
     left:0;
     width:100%;
     height:100%;
-    object-fit:cover;
+    object-fit:contain;
     opacity:0;
-    transition:opacity 1.4s ease;
+    transition:opacity 1s ease;
   }
   .heroSlide.active{
     opacity:1;
@@ -176,8 +186,10 @@
 <body>
 <div id="card">
   <div id="heroWrap">
-    <img class="heroSlide active" src="assets/hero.png" alt="日本地図に色鉛筆で色を塗るイラスト">
-    <img class="heroSlide" src="assets/hero2.png" alt="関東地方を色鉛筆で彩り豊かに塗るイラスト">
+    <img class="heroSlide active" src="assets/hero.webp" alt="日本地図に色鉛筆で色を塗るイラスト">
+    <img class="heroSlide" src="assets/hero2.webp" alt="関東地方を色鉛筆で彩り豊かに塗るイラスト">
+    <img class="heroSlide" src="assets/hero_kinki.webp" alt="近畿地方の名所・名物のイラスト">
+    <img class="heroSlide" src="assets/hero3.webp" alt="東京都の市区町村を色鉛筆で塗るイラスト">
   </div>
   <h1>まちいろ地図</h1>
   <p class="tagline">日本地図 色分けツール(都道府県・市区町村)</p>
@@ -217,7 +229,7 @@
     slides[current].classList.remove('active');
     current = (current + 1) % slides.length;
     slides[current].classList.add('active');
-  }, 5000);
+  }, 3800);
 })();
 </script>
 </body>
