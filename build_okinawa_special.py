@@ -192,11 +192,6 @@ def main():
         municipalities.extend(draw_group(muni_entries, names, proj_i, ioff_x, ioff_y, min_ring_area_px=1.0))
         decor_parts.append(bracket_path(box_px, ins["open"]))
 
-    # 沖縄県ウォーターマーク(装飾・クリック不可)
-    decor_parts.append(
-        f'<text class="prefWatermark" x="{CANVAS_W*0.55:.0f}" y="{CANVAS_H*0.55:.0f}">沖縄県</text>'
-    )
-
     extra_decor = "".join(decor_parts)
 
     out = {
