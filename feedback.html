@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HXU88VJFSC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-HXU88VJFSC');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>バグ報告・ご意見 | まちいろ地図</title>
+<meta name="description" content="「まちいろ地図」の不具合報告やご意見・ご要望を送れるフォームです。">
+<style>
+  :root{
+    --bg:#f7f5f0;
+    --panel:#ffffff;
+    --border:#d8d3c8;
+    --text:#4a4238;
+    --accent:#c98a5e;
+    --accent-dark:#a8663f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    display:flex;
+    justify-content:center;
+    padding:24px;
+  }
+  #card{
+    max-width:640px;
+    width:100%;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 8px 28px rgba(0,0,0,0.08);
+    padding:32px 36px 36px;
+  }
+  #backLink{
+    display:inline-block;
+    margin-bottom:14px;
+    font-size:12.5px;
+    color:#8a8071;
+    text-decoration:none;
+  }
+  #backLink:hover{color:var(--accent-dark);}
+  .siteBrand{
+    margin:0 0 2px;
+  }
+  .siteBrand a{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    color:var(--accent-dark);
+    text-decoration:none;
+  }
+  h1{
+    font-size:22px;
+    margin:0 0 6px;
+    color:var(--accent-dark);
+  }
+  p.lead{
+    font-size:13px;
+    line-height:1.7;
+    color:#8a8071;
+    margin:0 0 24px;
+  }
+  label{
+    display:block;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--text);
+    margin:16px 0 6px;
+  }
+  label .optional{
+    font-weight:400;
+    color:#a89c8a;
+    margin-left:4px;
+  }
+  select,
+  textarea,
+  input[type="email"]{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:13.5px;
+    font-family:inherit;
+    color:var(--text);
+    background:#fdfcf8;
+  }
+  textarea{
+    min-height:130px;
+    resize:vertical;
+  }
+  #honeypot{
+    position:absolute;
+    left:-9999px;
+    width:1px;
+    height:1px;
+    overflow:hidden;
+  }
+  #submitBtn{
+    margin-top:20px;
+    width:100%;
+    padding:11px;
+    border:none;
+    border-radius:8px;
+    background:var(--accent-dark);
+    color:#fff;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  #submitBtn:hover{background:#8c5330;}
+  #submitBtn:disabled{opacity:0.6;cursor:default;}
+  #formMsg{
+    margin-top:14px;
+    font-size:13px;
+    line-height:1.7;
+    display:none;
+    padding:10px 12px;
+    border-radius:8px;
+  }
+  #formMsg.success{
+    display:block;
+    background:#eef7ee;
+    color:#3d7a3d;
+  }
+  #formMsg.error{
+    display:block;
+    background:#fbeaea;
+    color:#a8663f;
+  }
+  footer{
+    margin-top:28px;
+    font-size:11px;
+    color:#b0a696;
+    line-height:1.6;
+  }
+</style>
+</head>
+<body>
+<div id="card">
+  <p class="siteBrand"><a href="index.html">まちいろ地図</a></p>
+  <a id="backLink" href="index.html">← マップ一覧に戻る</a>
+  <h1>バグ報告・ご意見</h1>
+  <p class="lead">使っていて見つけた不具合や、こうなったら嬉しいというご意見・ご要望をお気軽に送ってください。返信をご希望の場合はメールアドレスもご記入ください(必須ではありません)。</p>
+
+  <form id="feedbackForm">
+    <label for="type">種類</label>
+    <select id="type" name="type">
+      <option value="不具合(バグ)の報告">不具合(バグ)の報告</option>
+      <option value="ご意見・ご要望">ご意見・ご要望</option>
+      <option value="その他">その他</option>
+    </select>
+
+    <label for="message">内容</label>
+    <textarea id="message" name="message" required placeholder="例: 〇〇県のマップで、△△市をクリックしても色が塗れませんでした。"></textarea>
+
+    <label for="email">メールアドレス<span class="optional">(返信が必要な場合のみ)</span></label>
+    <input type="email" id="email" name="email" placeholder="example@mail.com">
+
+    <input id="honeypot" type="text" name="_gotcha" tabindex="-1" autocomplete="off">
+    <input type="hidden" name="_subject" value="まちいろ地図 フィードバック">
+
+    <button id="submitBtn" type="submit">送信する</button>
+    <div id="formMsg"></div>
+  </form>
+
+  <footer>まちいろ地図</footer>
+</div>
+
+<script>
+(function(){
+  var form = document.getElementById('feedbackForm');
+  var btn = document.getElementById('submitBtn');
+  var msg = document.getElementById('formMsg');
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = '送信中...';
+    msg.className = '';
+    msg.textContent = '';
+
+    fetch('https://formspree.io/f/mnpqnron', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: new FormData(form)
+    }).then(function(res){
+      if(res.ok){
+        msg.className = 'success';
+        msg.textContent = '送信しました。ありがとうございます！';
+        form.reset();
+        btn.textContent = '送信する';
+      } else {
+        throw new Error('送信に失敗しました');
+      }
+    }).catch(function(){
+      msg.className = 'error';
+      msg.textContent = '送信に失敗しました。お手数ですが、少し時間をおいてもう一度お試しください。';
+      btn.textContent = '送信する';
+    }).finally(function(){
+      btn.disabled = false;
+    });
+  });
+})();
+</script>
+</body>
+</html>
