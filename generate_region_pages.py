@@ -32,8 +32,11 @@ def main():
             )
         if not cards:
             continue
+        label = region_label(key, region_name)
+        hero_img = f'<img id="hero" src="assets/hero_{key}.png" alt="{label}のイメージイラスト">'
         out = (
-            tpl.replace("__REGION_LABEL__", region_label(key, region_name))
+            tpl.replace("__REGION_LABEL__", label)
+            .replace("__REGION_HERO__", hero_img)
             .replace("__PREF_CARDS__", "\n    ".join(cards))
         )
         out_path = os.path.join(BASE, f"region_{key}.html")

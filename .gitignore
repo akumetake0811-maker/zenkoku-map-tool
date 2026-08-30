@@ -7,3 +7,6 @@ muni_master.xlsx
 削除用フォルダ/
 __pycache__/
 *.pyc
+_pref_color_reference.html
+_pref_color_reference.png
+assets/_crop_*.png

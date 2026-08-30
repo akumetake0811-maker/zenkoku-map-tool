@@ -383,10 +383,11 @@
 
   <div class="section">
     <h2>⑥ シェアする</h2>
-    <p class="hint" style="margin:0 0 8px;">役に立ったら、ぜひSNSでシェアしてもらえると嬉しいです！</p>
+    <p class="hint" style="margin:0 0 8px;">役に立ったら、ぜひSNSでシェアしてもらえると嬉しいです！(Instagramはリンクをコピーします)</p>
     <div class="zoomrow" id="shareRow">
       <button class="toolbtn zbtn" id="shareXBtn">𝕏 でシェア</button>
-      <button class="toolbtn zbtn" id="shareLineBtn">💬 LINEでシェア</button>
+      <button class="toolbtn zbtn" id="shareInstagramBtn">📸 Instagram</button>
+      <button class="toolbtn zbtn" id="shareFacebookBtn">📘 Facebook</button>
     </div>
     <p class="hint" style="margin:8px 0 0;">シェアすると、色を塗ったままIllustratorで編集できるデータ(SVG)を保存できるようになります。</p>
     <button class="toolbtn" id="downloadSvgBtn" disabled>🎨 Illustrator用データ(SVG)を保存</button>
@@ -753,12 +754,13 @@
         ctx.textBaseline = 'middle';
         ctx.fillText(captionText, canvas.width / 2, ev.h * scale + bandH / 2, canvas.width - 40);
       }
-      // サイトのクレジットを右下に常時焼き込む
-      ctx.font = '400 15px "Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif';
+      // サイトのクレジットを右下に常時焼き込む(書き出し解像度に応じてサイズを合わせる)
+      var creditFontPx = Math.round(20 * scale);
+      ctx.font = '600 ' + creditFontPx + 'px "Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
-      ctx.fillStyle = 'rgba(74,66,56,0.6)';
-      ctx.fillText(SITE_NAME + ' - ' + SITE_URL, canvas.width - 10, ev.h * scale - 8);
+      ctx.fillStyle = 'rgba(74,66,56,0.8)';
+      ctx.fillText(SITE_NAME + ' - ' + SITE_URL, canvas.width - creditFontPx * 0.6, ev.h * scale - creditFontPx * 0.4);
 
       URL.revokeObjectURL(url);
       canvas.toBlob(function(blob){
@@ -782,10 +784,27 @@
     var url = encodeURIComponent(location.href);
     window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + url, '_blank', 'noopener');
   });
-  document.getElementById('shareLineBtn').addEventListener('click', function(){
+  document.getElementById('shareFacebookBtn').addEventListener('click', function(){
     markShared();
     var url = encodeURIComponent(location.href);
-    window.open('https://social-plugins.line.me/lineit/share?url=' + url, '_blank', 'noopener');
+    window.open('https://www.facebook.com/sharer/sharer.php?u=' + url, '_blank', 'noopener');
+  });
+  document.getElementById('shareInstagramBtn').addEventListener('click', function(){
+    // Instagramはウェブから直接投稿画面を開く仕組みが無いため、リンクをコピーする形で代替する
+    markShared();
+    var btn = document.getElementById('shareInstagramBtn');
+    var orig = btn.textContent;
+    var showCopied = function(){
+      btn.textContent = '✅ コピーしました';
+      setTimeout(function(){ btn.textContent = orig; }, 2000);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(location.href).then(showCopied).catch(function(){
+        prompt('このリンクをコピーしてInstagramに貼り付けてください', location.href);
+      });
+    } else {
+      prompt('このリンクをコピーしてInstagramに貼り付けてください', location.href);
+    }
   });
   downloadSvgBtn.addEventListener('click', function(){
     if(downloadSvgBtn.disabled) return;
