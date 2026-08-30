@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>佐賀県の市区町村地図 色分けツール(白地図)</title>
+<title>まちいろ地図 - 佐賀県の市区町村地図(白地図)</title>
 <meta name="description" content="佐賀県の市区町村を自由に色分けできる無料の白地図ツールです。色を選んで地図をクリックするだけ。訪れた場所の記録や旅行の計画、学習用の白地図としても使えます。PNG画像として保存も可能です。">
 <style>
   :root{
@@ -248,6 +248,18 @@
     text-decoration:none;
   }
   #backLink:hover{color:var(--accent-dark);}
+  .siteBrand{
+    margin:0 0 2px;
+  }
+  .siteBrand a{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    color:var(--accent-dark);
+    text-decoration:none;
+  }
+  #shareRow .toolbtn{flex:1 1 auto;}
+  #downloadSvgBtn{margin-top:8px;}
 </style>
 </head>
 <body>
@@ -305,6 +317,7 @@
 </div>
 
 <div id="sidebar">
+  <p class="siteBrand"><a href="index.html">まちいろ地図</a></p>
   <a id="backLink" href="index.html">← 都道府県を選び直す</a>
   <h1>佐賀県マップ 色分けツール</h1>
   <p class="hint">色を選んでから、地図または下のボタンをクリックすると塗りつぶせます。塗った内容はこのブラウザに自動保存され、次に開いたときも復元されます。</p>
@@ -356,6 +369,17 @@
     <input type="text" id="exportTitle" placeholder="画像に入れるタイトル(任意)" maxlength="40">
     <label class="chk"><input type="checkbox" id="exportDate"> 日付を入れる</label>
     <button class="toolbtn" id="exportBtn" style="margin-top:8px;">🖼 PNG画像として保存</button>
+  </div>
+
+  <div class="section">
+    <h2>⑥ シェアする</h2>
+    <p class="hint" style="margin:0 0 8px;">役に立ったら、ぜひSNSでシェアしてもらえると嬉しいです！</p>
+    <div class="zoomrow" id="shareRow">
+      <button class="toolbtn zbtn" id="shareXBtn">𝕏 でシェア</button>
+      <button class="toolbtn zbtn" id="shareLineBtn">💬 LINEでシェア</button>
+    </div>
+    <p class="hint" style="margin:8px 0 0;">シェアすると、色を塗ったままIllustratorで編集できるデータ(SVG)を保存できるようになります。</p>
+    <button class="toolbtn" id="downloadSvgBtn" disabled>🎨 Illustrator用データ(SVG)を保存</button>
   </div>
 </div>
 
@@ -634,29 +658,28 @@
     return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
   }
 
-  document.getElementById('exportBtn').addEventListener('click', function(){
-    var useCurrentView = document.getElementById('exportCurrentView').checked;
-    var ev = useCurrentView
-      ? {x: vb.x, y: vb.y, w: vb.w, h: vb.h}
-      : {x: 0, y: 0, w: SVG_W, h: SVG_H};
+  var SITE_NAME = 'まちいろ地図';
+  var SITE_URL = location.origin + location.pathname.replace(/[^/]*$/, '');
+  var EXPORT_STYLE_CSS =
+    '.muni{fill:#eef0e8;stroke:#6b6355;stroke-width:0.7;}' +
+    '.label{text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;paint-order:stroke;stroke:#fdfcf8;stroke-linejoin:round;font-weight:600;fill:#4a4238;}' +
+    '.insetBracket{fill:none;stroke:#3a352c;stroke-width:2;stroke-linejoin:miter;}' +
+    '.prefWatermark{font-size:120px;font-weight:700;fill:#3a352c;opacity:0.13;text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;}';
 
+  // 書き出したSVGは独立した画像として描画されるため、ページ側のCSSは効かない。
+  // 見た目に必要なスタイルをSVG自身に埋め込んだクローンを作る(PNG書き出し・SVG書き出し共通処理)。
+  function makeExportClone(ev, forceFullLabelSize){
     var svg = document.getElementById('mapSvg');
     var clone = svg.cloneNode(true);
     clone.setAttribute('width', ev.w);
     clone.setAttribute('height', ev.h);
     clone.setAttribute('viewBox', ev.x + ' ' + ev.y + ' ' + ev.w + ' ' + ev.h);
 
-    // 書き出したSVGは独立した画像として描画されるため、ページ側のCSSは効かない。
-    // 見た目に必要なスタイルをSVG自身に埋め込む。
     var styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-    styleEl.textContent =
-      '.muni{fill:#eef0e8;stroke:#6b6355;stroke-width:0.7;}' +
-      '.label{text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;paint-order:stroke;stroke:#fdfcf8;stroke-linejoin:round;font-weight:600;fill:#4a4238;}' +
-      '.insetBracket{fill:none;stroke:#3a352c;stroke-width:2;stroke-linejoin:miter;}' +
-      '.prefWatermark{font-size:120px;font-weight:700;fill:#3a352c;opacity:0.13;text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;}';
+    styleEl.textContent = EXPORT_STYLE_CSS;
     clone.insertBefore(styleEl, clone.firstChild);
 
-    if(!useCurrentView){
+    if(forceFullLabelSize){
       // 全域書き出しは今の画面のズーム状態と無関係なので、文字サイズ・間引きを
       // 「全域を1画面に収めた場合」の基準で計算し直す。表示中の範囲を書き出す
       // 場合は、既に画面表示用に計算済みの値がクローンにそのまま含まれている。
@@ -676,6 +699,25 @@
     if(document.body.classList.contains('hide-labels')){
       clone.querySelectorAll('.label').forEach(function(t){ t.style.display = 'none'; });
     }
+    return clone;
+  }
+
+  function downloadBlob(blob, filename){
+    var link = document.createElement('a');
+    link.download = filename;
+    link.href = URL.createObjectURL(blob);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  document.getElementById('exportBtn').addEventListener('click', function(){
+    var useCurrentView = document.getElementById('exportCurrentView').checked;
+    var ev = useCurrentView
+      ? {x: vb.x, y: vb.y, w: vb.w, h: vb.h}
+      : {x: 0, y: 0, w: SVG_W, h: SVG_H};
+
+    var clone = makeExportClone(ev, !useCurrentView);
     var svgData = new XMLSerializer().serializeToString(clone);
     var svgBlob = new Blob(['<?xml version="1.0" standalone="no"?>\r\n' + svgData], {type:'image/svg+xml;charset=utf-8'});
     var url = URL.createObjectURL(svgBlob);
@@ -701,20 +743,46 @@
         ctx.textBaseline = 'middle';
         ctx.fillText(captionText, canvas.width / 2, ev.h * scale + bandH / 2, canvas.width - 40);
       }
+      // サイトのクレジットを右下に常時焼き込む
+      ctx.font = '400 15px "Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+      ctx.fillStyle = 'rgba(74,66,56,0.6)';
+      ctx.fillText(SITE_NAME + ' - ' + SITE_URL, canvas.width - 10, ev.h * scale - 8);
+
       URL.revokeObjectURL(url);
       canvas.toBlob(function(blob){
-        var link = document.createElement('a');
-        link.download = '佐賀県マップ.png';
-        link.href = URL.createObjectURL(blob);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        downloadBlob(blob, '佐賀県マップ.png');
       });
     };
     img.onerror = function(err){
       alert('PNG書き出しに失敗しました。ブラウザのセキュリティ制限の可能性があります。');
     };
     img.src = url;
+  });
+
+  // ---- SNSシェア / Illustrator用SVG書き出し ----
+  var downloadSvgBtn = document.getElementById('downloadSvgBtn');
+  function markShared(){
+    downloadSvgBtn.disabled = false;
+  }
+  document.getElementById('shareXBtn').addEventListener('click', function(){
+    markShared();
+    var text = encodeURIComponent('「' + SITE_NAME + '」で佐賀県の地図を塗ってみました！');
+    var url = encodeURIComponent(location.href);
+    window.open('https://twitter.com/intent/tweet?text=' + text + '&url=' + url, '_blank', 'noopener');
+  });
+  document.getElementById('shareLineBtn').addEventListener('click', function(){
+    markShared();
+    var url = encodeURIComponent(location.href);
+    window.open('https://social-plugins.line.me/lineit/share?url=' + url, '_blank', 'noopener');
+  });
+  downloadSvgBtn.addEventListener('click', function(){
+    if(downloadSvgBtn.disabled) return;
+    var clone = makeExportClone({x:0, y:0, w:SVG_W, h:SVG_H}, true);
+    var svgData = new XMLSerializer().serializeToString(clone);
+    var blob = new Blob(['<?xml version="1.0" standalone="no"?>\r\n' + svgData], {type:'image/svg+xml;charset=utf-8'});
+    downloadBlob(blob, '佐賀県マップ_illustrator用.svg');
   });
 
   loadState();

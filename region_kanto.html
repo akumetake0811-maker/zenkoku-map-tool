@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>関東地方の市区町村マップ 色分けツール(白地図)</title>
+<title>まちいろ地図 - 関東地方の市区町村マップ(白地図)</title>
 <meta name="description" content="関東地方の都道府県を選んで、市区町村を自由に色分けできる無料の白地図ツールです。訪れた場所の記録や旅行の計画、学習用の白地図としても使えます。">
 <style>
   :root{
@@ -43,6 +43,16 @@
     text-decoration:none;
   }
   #backLink:hover{color:var(--accent-dark);}
+  .siteBrand{
+    margin:0 0 2px;
+  }
+  .siteBrand a{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.03em;
+    color:var(--accent-dark);
+    text-decoration:none;
+  }
   h1{
     font-size:22px;
     margin:0 0 6px;
@@ -96,6 +106,7 @@
 </head>
 <body>
 <div id="card">
+  <p class="siteBrand"><a href="index.html">まちいろ地図</a></p>
   <a id="backLink" href="index.html">← 地方選択に戻る</a>
   <h1>関東地方</h1>
   <p class="lead">都道府県を選ぶと、市区町村ごとに塗り分けられる詳細マップが開きます。</p>
@@ -108,7 +119,7 @@
     <a class="prefcard" href="map_tokyo.html"><span class="pname">東京都</span><span class="pcount">53市区町村</span></a>
     <a class="prefcard" href="map_kanagawa.html"><span class="pname">神奈川県</span><span class="pcount">33市区町村</span></a>
   </div>
-  <footer>日本地図マップ 色分けツール</footer>
+  <footer>まちいろ地図</footer>
 </div>
 </body>
 </html>
