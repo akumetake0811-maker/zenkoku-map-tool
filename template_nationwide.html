@@ -225,6 +225,21 @@
     border-color:var(--accent-dark);
   }
   #exportBtn:hover{background:#8c5330;}
+  .toolbtn:disabled{
+    opacity:0.45;
+    cursor:default;
+  }
+  .toolbtn:disabled:hover{background:#faf8f3;}
+  #exportTitle{
+    width:100%;
+    padding:6px 8px;
+    margin:8px 0 2px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    font-size:12px;
+    color:var(--text);
+    font-family:inherit;
+  }
   #backLink{
     display:inline-block;
     margin-bottom:10px;
@@ -254,7 +269,7 @@
 <div id="sidebar">
   <a id="backLink" href="index.html">← マップ一覧に戻る</a>
   <h1>全国 都道府県マップ 色分けツール</h1>
-  <p class="hint">色を選んでから、地図または下のボタンをクリックすると塗りつぶせます。沖縄本島は本土と同じ縮尺のまま、右下に位置を調整して表示しています。</p>
+  <p class="hint">色を選んでから、地図または下のボタンをクリックすると塗りつぶせます。沖縄本島は本土と同じ縮尺のまま、右下に位置を調整して表示しています。塗った内容はこのブラウザに自動保存され、次に開いたときも復元されます。</p>
 
   <div class="section">
     <h2>① 色を選ぶ</h2>
@@ -269,6 +284,10 @@
     <h2>② 塗る / 消す</h2>
     <button class="toolbtn active" id="paintModeBtn">🖌 塗るモード(選択中)</button>
     <button class="toolbtn" id="eraserBtn">🧹 消しゴムモード</button>
+    <div class="zoomrow" style="margin-bottom:6px;">
+      <button class="toolbtn zbtn" id="undoBtn" disabled>↶ 元に戻す</button>
+      <button class="toolbtn zbtn" id="redoBtn" disabled>↷ やり直す</button>
+    </div>
     <button class="toolbtn" id="resetBtn">↺ 全部リセット</button>
     <label class="chk"><input type="checkbox" id="toggleLabels" checked> 都道府県名を表示</label>
     <div class="sliderRow">
@@ -295,7 +314,10 @@
 
   <div class="section">
     <h2>⑤ 書き出し</h2>
-    <button class="toolbtn" id="exportBtn">🖼 PNG画像として保存</button>
+    <label class="chk"><input type="checkbox" id="exportCurrentView"> 表示中の範囲だけを書き出す</label>
+    <input type="text" id="exportTitle" placeholder="画像に入れるタイトル(任意)" maxlength="40">
+    <label class="chk"><input type="checkbox" id="exportDate"> 日付を入れる</label>
+    <button class="toolbtn" id="exportBtn" style="margin-top:8px;">🖼 PNG画像として保存</button>
   </div>
 
   <p class="hint">地図データ出典: 地球地図日本(国土地理院)</p>
@@ -306,6 +328,7 @@
   var SVG_W = __SVG_W__, SVG_H = __SVG_H__;
   var DEFAULT_VIEW = {x:0, y:0, w:SVG_W, h:SVG_H};
   var BASE_FONT = __BASE_FONT__;
+  var STORAGE_KEY = 'zmap_colors_nationwide';
 
   var PALETTE = [
     "#e57373","#f2a65a","#f7d060","#a3d977","#6bbf8e",
@@ -360,11 +383,62 @@
     eraserBtn.classList.toggle('active', state.eraser);
   }
 
+  // ---- 保存/読み込み(このブラウザのlocalStorageに自動保存) ----
+  function saveState(){
+    var data = {};
+    document.querySelectorAll('.muni').forEach(function(p){
+      if(p.style.fill) data[p.id] = p.style.fill;
+    });
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+  }
+  function loadState(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      var data = JSON.parse(raw);
+      Object.keys(data).forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) el.style.fill = data[id];
+      });
+    }catch(e){}
+  }
+
+  // ---- 元に戻す/やり直し ----
+  var undoStack = [], redoStack = [];
+  var undoBtn = document.getElementById('undoBtn');
+  var redoBtn = document.getElementById('redoBtn');
+  function updateUndoRedoButtons(){
+    undoBtn.disabled = undoStack.length === 0;
+    redoBtn.disabled = redoStack.length === 0;
+  }
+  undoBtn.addEventListener('click', function(){
+    var action = undoStack.pop();
+    if(!action) return;
+    var el = document.getElementById(action.id);
+    if(el) el.style.fill = action.prev;
+    redoStack.push(action);
+    updateUndoRedoButtons();
+    saveState();
+  });
+  redoBtn.addEventListener('click', function(){
+    var action = redoStack.pop();
+    if(!action) return;
+    var el = document.getElementById(action.id);
+    if(el) el.style.fill = action.next;
+    undoStack.push(action);
+    updateUndoRedoButtons();
+    saveState();
+  });
+
   document.getElementById('resetBtn').addEventListener('click', function(){
     if(!confirm('すべての色塗りをリセットします。よろしいですか？')) return;
     document.querySelectorAll('.muni').forEach(function(p){
       p.style.fill = '';
     });
+    undoStack = [];
+    redoStack = [];
+    updateUndoRedoButtons();
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
   });
 
   document.getElementById('toggleLabels').addEventListener('change', function(e){
@@ -474,11 +548,14 @@
   window.addEventListener('pointercancel', endPan);
 
   function applyPaint(el){
-    if(state.eraser){
-      el.style.fill = '';
-    } else {
-      el.style.fill = state.color;
-    }
+    var prevColor = el.style.fill || '';
+    var newColor = state.eraser ? '' : state.color;
+    if(prevColor === newColor) return;
+    undoStack.push({id: el.id, prev: prevColor, next: newColor});
+    redoStack = [];
+    updateUndoRedoButtons();
+    el.style.fill = newColor;
+    saveState();
   }
 
   document.querySelectorAll('.muni').forEach(function(p){
@@ -513,12 +590,21 @@
     });
   });
 
+  function formatDateJp(d){
+    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+
   document.getElementById('exportBtn').addEventListener('click', function(){
+    var useCurrentView = document.getElementById('exportCurrentView').checked;
+    var ev = useCurrentView
+      ? {x: vb.x, y: vb.y, w: vb.w, h: vb.h}
+      : {x: 0, y: 0, w: SVG_W, h: SVG_H};
+
     var svg = document.getElementById('mapSvg');
     var clone = svg.cloneNode(true);
-    clone.setAttribute('width', SVG_W);
-    clone.setAttribute('height', SVG_H);
-    clone.setAttribute('viewBox', '0 0 ' + SVG_W + ' ' + SVG_H);
+    clone.setAttribute('width', ev.w);
+    clone.setAttribute('height', ev.h);
+    clone.setAttribute('viewBox', ev.x + ' ' + ev.y + ' ' + ev.w + ' ' + ev.h);
 
     var styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
     styleEl.textContent =
@@ -528,17 +614,19 @@
       '.label{text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;paint-order:stroke;stroke:#fdfcf8;stroke-linejoin:round;font-weight:600;fill:#4a4238;}';
     clone.insertBefore(styleEl, clone.firstChild);
 
-    var exportFontUnits = TARGET_LABEL_SCREEN_PX * labelScaleMultiplier;
-    var exportStrokeUnits = exportFontUnits * 0.15;
-    clone.querySelectorAll('.label').forEach(function(t){
-      t.setAttribute('font-size', exportFontUnits.toFixed(2));
-      t.setAttribute('stroke-width', exportStrokeUnits.toFixed(2));
-      var w = parseFloat(t.dataset.w) || 0;
-      var h = parseFloat(t.dataset.h) || 0;
-      if(Math.sqrt(w * h) < DECLUTTER_THRESHOLD_PX){
-        t.style.display = 'none';
-      }
-    });
+    if(!useCurrentView){
+      var exportFontUnits = TARGET_LABEL_SCREEN_PX * labelScaleMultiplier;
+      var exportStrokeUnits = exportFontUnits * 0.15;
+      clone.querySelectorAll('.label').forEach(function(t){
+        t.setAttribute('font-size', exportFontUnits.toFixed(2));
+        t.setAttribute('stroke-width', exportStrokeUnits.toFixed(2));
+        var w = parseFloat(t.dataset.w) || 0;
+        var h = parseFloat(t.dataset.h) || 0;
+        if(Math.sqrt(w * h) < DECLUTTER_THRESHOLD_PX){
+          t.style.display = 'none';
+        }
+      });
+    }
 
     if(document.body.classList.contains('hide-labels')){
       clone.querySelectorAll('.label').forEach(function(t){ t.style.display = 'none'; });
@@ -548,14 +636,26 @@
     var url = URL.createObjectURL(svgBlob);
     var img = new Image();
     img.onload = function(){
-      var scale = 2;
+      var scale = Math.max(2, 1400 / ev.w);
+      var titleText = document.getElementById('exportTitle').value.trim();
+      var includeDate = document.getElementById('exportDate').checked;
+      var captionText = [titleText, includeDate ? formatDateJp(new Date()) : ''].filter(Boolean).join('　');
+      var bandH = captionText ? 64 : 0;
+
       var canvas = document.createElement('canvas');
-      canvas.width = SVG_W * scale;
-      canvas.height = SVG_H * scale;
+      canvas.width = ev.w * scale;
+      canvas.height = ev.h * scale + bandH;
       var ctx = canvas.getContext('2d');
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0,0,canvas.width,canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, ev.w * scale, ev.h * scale);
+      if(captionText){
+        ctx.fillStyle = '#4a4238';
+        ctx.font = '600 30px "Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(captionText, canvas.width / 2, ev.h * scale + bandH / 2, canvas.width - 40);
+      }
       URL.revokeObjectURL(url);
       canvas.toBlob(function(blob){
         var link = document.createElement('a');
@@ -572,6 +672,7 @@
     img.src = url;
   });
 
+  loadState();
   selectColor(state.color);
 })();
 </script>

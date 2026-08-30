@@ -44,7 +44,8 @@ def main():
         default_view = json.dumps(data["default_view"], ensure_ascii=False)
 
         out = (
-            tpl.replace("__PREF_NAME__", pref["name"])
+            tpl.replace("__PREF_KEY__", key)
+            .replace("__PREF_NAME__", pref["name"])
             .replace("__SVG_W__", str(data["svg_w"]))
             .replace("__SVG_H__", str(data["svg_h"]))
             .replace("__DEFAULT_VIEW__", default_view)
