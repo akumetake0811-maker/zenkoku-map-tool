@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://akumetake0811-maker.github.io/zenkoku-map-tool/sitemap.xml
