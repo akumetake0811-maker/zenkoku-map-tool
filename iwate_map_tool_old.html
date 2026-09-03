@@ -290,6 +290,68 @@
     stroke-linejoin:round;
     pointer-events:none;
   }
+  .measureRow{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:6px;
+  }
+  .measureRow select{
+    flex:1;
+    min-width:0;
+    padding:6px 7px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:12px;
+    font-family:inherit;
+    color:var(--text);
+    background:#fff;
+  }
+  .measureTo{
+    color:#a89c8a;
+    font-size:12px;
+  }
+  #circleRadiusInput{
+    width:64px;
+    padding:6px 7px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:12px;
+    font-family:inherit;
+    color:var(--text);
+    background:#fff;
+  }
+  .measureUnit{
+    font-size:12px;
+    color:#6b6355;
+  }
+  .measureItem{
+    cursor:pointer;
+  }
+  .measureLine{
+    stroke:#2d6a8f;
+    stroke-width:3;
+    stroke-dasharray:6,4;
+  }
+  .measureCircle{
+    stroke:#2d6a8f;
+    stroke-width:2.5;
+    stroke-dasharray:6,4;
+    fill:#2d6a8f;
+    fill-opacity:0.08;
+  }
+  .measureLabel{
+    font-family:inherit;
+    font-size:16px;
+    font-weight:600;
+    fill:#1c4a63;
+    text-anchor:middle;
+    paint-order:stroke;
+    stroke:#fdfcf8;
+    stroke-width:3px;
+    stroke-linejoin:round;
+    pointer-events:none;
+  }
   #exportBtn{
     background:var(--accent-dark);
     color:#fff;
@@ -412,6 +474,7 @@
 <text class="label old" x="1156.76" y="1396.69">川井</text>
 <text class="label old" x="1160.32" y="530.55">山形</text>
     </g>
+    <g id="measureLayer"></g>
     <g id="pinsLayer"></g>
   </svg>
 </div>
@@ -477,7 +540,34 @@
       <button class="toolbtn" id="addPinBtn">📍 ピンを立てる</button>
     </div>
     <p class="hint" id="pinHint" style="margin:4px 0 0;">住所や施設名を入力すると、地図上に印をつけられます(国土地理院の住所検索を利用)。ピンをクリックすると消せます。</p>
+    <div class="sliderRow">
+      <label for="pinSizeSlider" class="sliderLabel">ピンの大きさ</label>
+      <input type="range" id="pinSizeSlider" min="0.6" max="2.5" step="0.1" value="1">
+      <span id="pinSizeValue">100%</span>
+    </div>
     <button class="toolbtn" id="clearPinsBtn">🗑 ピンを全部消す</button>
+  </div>
+
+  <div class="section">
+    <h2>⑧ 距離をはかる・円を描く</h2>
+    <p class="hint" style="margin:0 0 8px;">先に「⑦」でピンを立ててから使えます。</p>
+
+    <div class="measureRow">
+      <select id="pinSelectA"><option value="">(先に⑦でピンを立ててください)</option></select>
+      <span class="measureTo">〜</span>
+      <select id="pinSelectB"><option value="">(先に⑦でピンを立ててください)</option></select>
+    </div>
+    <button class="toolbtn" id="measureDistBtn">📏 2点間の距離を測る</button>
+    <p class="hint" id="distResult" style="margin:2px 0 10px;"></p>
+
+    <div class="measureRow">
+      <select id="pinSelectCenter"><option value="">(先に⑦でピンを立ててください)</option></select>
+      <input type="number" id="circleRadiusInput" min="0.1" step="0.1" value="5">
+      <span class="measureUnit">km</span>
+    </div>
+    <button class="toolbtn" id="drawCircleBtn">⭕ 円を描く</button>
+
+    <button class="toolbtn" id="clearMeasureBtn" style="margin-top:6px;">🗑 距離線・円を全部消す</button>
   </div>
 </div>
 
@@ -699,7 +789,10 @@
       '.label.old{font-size:' + (10 * scaleNum) + 'px;font-weight:600;fill:#a8321f;stroke-width:' + (2.4 * scaleNum) + 'px;}' +
       '.pinShape{fill:#d9432e;stroke:#7a2418;stroke-width:2;}' +
       '.pinHole{fill:#fdfcf8;}' +
-      '.pinLabel{font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;font-size:15px;font-weight:600;fill:#7a2418;text-anchor:middle;paint-order:stroke;stroke:#fdfcf8;stroke-width:3px;stroke-linejoin:round;}';
+      '.pinLabel{font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;font-size:15px;font-weight:600;fill:#7a2418;text-anchor:middle;paint-order:stroke;stroke:#fdfcf8;stroke-width:3px;stroke-linejoin:round;}' +
+      '.measureLine{stroke:#2d6a8f;stroke-width:3;stroke-dasharray:6,4;}' +
+      '.measureCircle{stroke:#2d6a8f;stroke-width:2.5;stroke-dasharray:6,4;fill:#2d6a8f;fill-opacity:0.08;}' +
+      '.measureLabel{font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;font-size:16px;font-weight:600;fill:#1c4a63;text-anchor:middle;paint-order:stroke;stroke:#fdfcf8;stroke-width:3px;stroke-linejoin:round;}';
     clone.insertBefore(styleEl, clone.firstChild);
 
     if(document.body.classList.contains('hide-old')){
@@ -742,6 +835,9 @@
 
   // ---- 住所ピン(国土地理院の住所検索APIでジオコーディング) ----
   var PROJ = {lonMin:140.65312481, latMax:40.4502556, coslat:0.7705248852252181, scale:1609.2911412204658, margin:20};
+  var KM_PER_DEGREE_LAT = 111.32;
+  var UNITS_PER_KM = PROJ.scale / KM_PER_DEGREE_LAT;
+
   function lonLatToXY(lon, lat){
     return {
       x: (lon - PROJ.lonMin) * PROJ.coslat * PROJ.scale + PROJ.margin,
@@ -749,32 +845,53 @@
     };
   }
 
-  var pinsLayer = document.getElementById('pinsLayer');
+  function haversineKm(lat1, lon1, lat2, lon2){
+    var R = 6371;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
 
-  function addPinAt(x, y, label){
+  var pinsLayer = document.getElementById('pinsLayer');
+  var measureLayer = document.getElementById('measureLayer');
+  var pinsData = [];
+  var pinIdSeq = 0;
+  var pinSizeMultiplier = 1;
+
+  // ピンの見た目を作るだけの純粋な描画関数。ピンの大きさスライダーの値(pinSizeMultiplier)を
+  // 変えたときに全ピンを作り直せるよう、データの登録(pinsData)とは分離してある。
+  function buildPinGroup(x, y, label){
+    var s = 20 * pinSizeMultiplier;
+    var halfW = s * 0.9;
+    var bodyH = s * 1.9;
+
     var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.setAttribute('class', 'pin');
 
     var shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     var d = 'M' + x + ',' + y +
-      ' C' + (x - 18) + ',' + (y - 14) + ' ' + (x - 18) + ',' + (y - 38) + ' ' + x + ',' + (y - 38) +
-      ' C' + (x + 18) + ',' + (y - 38) + ' ' + (x + 18) + ',' + (y - 14) + ' ' + x + ',' + y + ' Z';
+      ' C' + (x - halfW) + ',' + (y - bodyH * 0.37) + ' ' + (x - halfW) + ',' + (y - bodyH) + ' ' + x + ',' + (y - bodyH) +
+      ' C' + (x + halfW) + ',' + (y - bodyH) + ' ' + (x + halfW) + ',' + (y - bodyH * 0.37) + ' ' + x + ',' + y + ' Z';
     shape.setAttribute('d', d);
     shape.setAttribute('class', 'pinShape');
     g.appendChild(shape);
 
     var hole = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     hole.setAttribute('cx', x);
-    hole.setAttribute('cy', y - 26);
-    hole.setAttribute('r', 7);
+    hole.setAttribute('cy', y - bodyH * 0.68);
+    hole.setAttribute('r', s * 0.35);
     hole.setAttribute('class', 'pinHole');
     g.appendChild(hole);
 
     if(label){
       var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       text.setAttribute('x', x);
-      text.setAttribute('y', y - 46);
+      text.setAttribute('y', y - bodyH - s * 0.4);
       text.setAttribute('class', 'pinLabel');
+      text.style.fontSize = (s * 0.75) + 'px';
       text.textContent = label;
       g.appendChild(text);
     }
@@ -783,12 +900,62 @@
     titleEl.textContent = (label || '') + '(クリックで削除)';
     g.appendChild(titleEl);
 
+    return g;
+  }
+
+  function attachPinNode(p){
+    var g = buildPinGroup(p.x, p.y, p.label);
+    g.dataset.pinId = p.id;
     g.addEventListener('click', function(e){
       e.stopPropagation();
       g.remove();
+      pinsData = pinsData.filter(function(pp){ return pp.id !== p.id; });
+      refreshPinSelects();
     });
-
     pinsLayer.appendChild(g);
+  }
+
+  function addPinAt(x, y, label, lon, lat){
+    pinIdSeq++;
+    var p = {id: pinIdSeq, x: x, y: y, lon: lon, lat: lat, label: label};
+    pinsData.push(p);
+    attachPinNode(p);
+    refreshPinSelects();
+    return p.id;
+  }
+
+  function redrawAllPins(){
+    while(pinsLayer.firstChild) pinsLayer.removeChild(pinsLayer.firstChild);
+    pinsData.forEach(attachPinNode);
+  }
+
+  function findPin(id){
+    id = parseInt(id, 10);
+    for(var i = 0; i < pinsData.length; i++){
+      if(pinsData[i].id === id) return pinsData[i];
+    }
+    return null;
+  }
+
+  function refreshPinSelects(){
+    ['pinSelectA', 'pinSelectB', 'pinSelectCenter'].forEach(function(selId){
+      var sel = document.getElementById(selId);
+      var prevValue = sel.value;
+      sel.innerHTML = '';
+      var placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = pinsData.length ? 'ピンを選択' : '(先に⑦でピンを立ててください)';
+      sel.appendChild(placeholder);
+      pinsData.forEach(function(p){
+        var opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.label || ('ピン#' + p.id);
+        sel.appendChild(opt);
+      });
+      if(pinsData.some(function(p){ return String(p.id) === prevValue; })){
+        sel.value = prevValue;
+      }
+    });
   }
 
   function panTo(x, y){
@@ -823,7 +990,7 @@
       var lon = top.geometry.coordinates[0];
       var lat = top.geometry.coordinates[1];
       var xy = lonLatToXY(lon, lat);
-      addPinAt(xy.x, xy.y, query);
+      addPinAt(xy.x, xy.y, query, lon, lat);
       panTo(xy.x, xy.y);
     }).catch(function(){
       alert('住所検索に失敗しました。通信状況を確認してもう一度試してください。');
@@ -843,8 +1010,104 @@
 
   document.getElementById('clearPinsBtn').addEventListener('click', function(){
     while(pinsLayer.firstChild) pinsLayer.removeChild(pinsLayer.firstChild);
+    pinsData = [];
+    refreshPinSelects();
   });
 
+  var pinSizeSlider = document.getElementById('pinSizeSlider');
+  var pinSizeValue = document.getElementById('pinSizeValue');
+  pinSizeSlider.addEventListener('input', function(e){
+    pinSizeMultiplier = parseFloat(e.target.value);
+    pinSizeValue.textContent = Math.round(pinSizeMultiplier * 100) + '%';
+    redrawAllPins();
+  });
+
+  // ---- 2点間の距離 / 円 ----
+  function addMeasureNode(node, tooltip){
+    node.addEventListener('click', function(e){
+      e.stopPropagation();
+      node.remove();
+    });
+    var titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    titleEl.textContent = tooltip + '(クリックで削除)';
+    node.appendChild(titleEl);
+    measureLayer.appendChild(node);
+  }
+
+  document.getElementById('measureDistBtn').addEventListener('click', function(){
+    var resultEl = document.getElementById('distResult');
+    var a = findPin(document.getElementById('pinSelectA').value);
+    var b = findPin(document.getElementById('pinSelectB').value);
+    if(!a || !b){
+      resultEl.textContent = '2つのピンを選んでください。';
+      return;
+    }
+    if(a.id === b.id){
+      resultEl.textContent = '違う2つのピンを選んでください。';
+      return;
+    }
+    var km = haversineKm(a.lat, a.lon, b.lat, b.lon);
+    var kmText = km.toFixed(1) + ' km';
+
+    var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'measureItem');
+    var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', a.x);
+    line.setAttribute('y1', a.y);
+    line.setAttribute('x2', b.x);
+    line.setAttribute('y2', b.y);
+    line.setAttribute('class', 'measureLine');
+    g.appendChild(line);
+
+    var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', (a.x + b.x) / 2);
+    text.setAttribute('y', (a.y + b.y) / 2 - 10);
+    text.setAttribute('class', 'measureLabel');
+    text.textContent = kmText;
+    g.appendChild(text);
+
+    addMeasureNode(g, '距離線 ' + kmText);
+    resultEl.textContent = (a.label || 'ピン') + ' 〜 ' + (b.label || 'ピン') + ' : ' + kmText;
+  });
+
+  document.getElementById('drawCircleBtn').addEventListener('click', function(){
+    var center = findPin(document.getElementById('pinSelectCenter').value);
+    var radiusKm = parseFloat(document.getElementById('circleRadiusInput').value);
+    if(!center){
+      alert('中心にするピンを選んでください。');
+      return;
+    }
+    if(!radiusKm || radiusKm <= 0){
+      alert('半径には0より大きい数値を入力してください。');
+      return;
+    }
+    var r = radiusKm * UNITS_PER_KM;
+
+    var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'measureItem');
+    var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', center.x);
+    circle.setAttribute('cy', center.y);
+    circle.setAttribute('r', r);
+    circle.setAttribute('class', 'measureCircle');
+    g.appendChild(circle);
+
+    var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', center.x);
+    text.setAttribute('y', center.y - r - 8);
+    text.setAttribute('class', 'measureLabel');
+    text.textContent = '半径 ' + radiusKm + ' km';
+    g.appendChild(text);
+
+    addMeasureNode(g, '円 半径' + radiusKm + 'km');
+  });
+
+  document.getElementById('clearMeasureBtn').addEventListener('click', function(){
+    while(measureLayer.firstChild) measureLayer.removeChild(measureLayer.firstChild);
+    document.getElementById('distResult').textContent = '';
+  });
+
+  refreshPinSelects();
   selectColor(state.color);
 })();
 </script>
