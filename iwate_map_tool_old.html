@@ -246,6 +246,50 @@
     text-align:center;
     white-space:nowrap;
   }
+  .addrRow{
+    display:flex;
+    gap:6px;
+    margin-bottom:6px;
+  }
+  #addressInput{
+    flex:1;
+    min-width:0;
+    padding:7px 9px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    font-size:12.5px;
+    font-family:inherit;
+    color:var(--text);
+    background:#fff;
+  }
+  #addPinBtn{
+    width:auto;
+    margin-bottom:0;
+    white-space:nowrap;
+  }
+  .pin{
+    cursor:pointer;
+  }
+  .pinShape{
+    fill:#d9432e;
+    stroke:#7a2418;
+    stroke-width:2;
+  }
+  .pinHole{
+    fill:#fdfcf8;
+  }
+  .pinLabel{
+    font-family:inherit;
+    font-size:15px;
+    font-weight:600;
+    fill:#7a2418;
+    text-anchor:middle;
+    paint-order:stroke;
+    stroke:#fdfcf8;
+    stroke-width:3px;
+    stroke-linejoin:round;
+    pointer-events:none;
+  }
   #exportBtn{
     background:var(--accent-dark);
     color:#fff;
@@ -368,6 +412,7 @@
 <text class="label old" x="1156.76" y="1396.69">川井</text>
 <text class="label old" x="1160.32" y="530.55">山形</text>
     </g>
+    <g id="pinsLayer"></g>
   </svg>
 </div>
 
@@ -423,6 +468,16 @@
     <h2>⑥ 書き出し</h2>
     <label class="chk"><input type="checkbox" id="exportCurrentView"> 表示中の範囲だけを書き出す</label>
     <button class="toolbtn" id="exportBtn">🖼 PNG画像として保存</button>
+  </div>
+
+  <div class="section">
+    <h2>⑦ 住所でピンを立てる</h2>
+    <div class="addrRow">
+      <input type="text" id="addressInput" placeholder="例: 盛岡市内丸10-1">
+      <button class="toolbtn" id="addPinBtn">📍 ピンを立てる</button>
+    </div>
+    <p class="hint" id="pinHint" style="margin:4px 0 0;">住所や施設名を入力すると、地図上に印をつけられます(国土地理院の住所検索を利用)。ピンをクリックすると消せます。</p>
+    <button class="toolbtn" id="clearPinsBtn">🗑 ピンを全部消す</button>
   </div>
 </div>
 
@@ -641,7 +696,10 @@
       '.muni.old{fill:transparent;stroke:#c0392b;stroke-width:0.9;stroke-dasharray:2.5,2;}' +
       '.label{text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;paint-order:stroke;stroke:#fdfcf8;stroke-linejoin:round;}' +
       '.label.cur{font-size:' + (16 * scaleNum) + 'px;font-weight:600;fill:#4a4238;stroke-width:' + (2.4 * scaleNum) + 'px;}' +
-      '.label.old{font-size:' + (10 * scaleNum) + 'px;font-weight:600;fill:#a8321f;stroke-width:' + (2.4 * scaleNum) + 'px;}';
+      '.label.old{font-size:' + (10 * scaleNum) + 'px;font-weight:600;fill:#a8321f;stroke-width:' + (2.4 * scaleNum) + 'px;}' +
+      '.pinShape{fill:#d9432e;stroke:#7a2418;stroke-width:2;}' +
+      '.pinHole{fill:#fdfcf8;}' +
+      '.pinLabel{font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;font-size:15px;font-weight:600;fill:#7a2418;text-anchor:middle;paint-order:stroke;stroke:#fdfcf8;stroke-width:3px;stroke-linejoin:round;}';
     clone.insertBefore(styleEl, clone.firstChild);
 
     if(document.body.classList.contains('hide-old')){
@@ -680,6 +738,111 @@
       alert('PNG書き出しに失敗しました。ブラウザのセキュリティ制限の可能性があります。');
     };
     img.src = url;
+  });
+
+  // ---- 住所ピン(国土地理院の住所検索APIでジオコーディング) ----
+  var PROJ = {lonMin:140.65312481, latMax:40.4502556, coslat:0.7705248852252181, scale:1609.2911412204658, margin:20};
+  function lonLatToXY(lon, lat){
+    return {
+      x: (lon - PROJ.lonMin) * PROJ.coslat * PROJ.scale + PROJ.margin,
+      y: (PROJ.latMax - lat) * PROJ.scale + PROJ.margin
+    };
+  }
+
+  var pinsLayer = document.getElementById('pinsLayer');
+
+  function addPinAt(x, y, label){
+    var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'pin');
+
+    var shape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    var d = 'M' + x + ',' + y +
+      ' C' + (x - 18) + ',' + (y - 14) + ' ' + (x - 18) + ',' + (y - 38) + ' ' + x + ',' + (y - 38) +
+      ' C' + (x + 18) + ',' + (y - 38) + ' ' + (x + 18) + ',' + (y - 14) + ' ' + x + ',' + y + ' Z';
+    shape.setAttribute('d', d);
+    shape.setAttribute('class', 'pinShape');
+    g.appendChild(shape);
+
+    var hole = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    hole.setAttribute('cx', x);
+    hole.setAttribute('cy', y - 26);
+    hole.setAttribute('r', 7);
+    hole.setAttribute('class', 'pinHole');
+    g.appendChild(hole);
+
+    if(label){
+      var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', x);
+      text.setAttribute('y', y - 46);
+      text.setAttribute('class', 'pinLabel');
+      text.textContent = label;
+      g.appendChild(text);
+    }
+
+    var titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    titleEl.textContent = (label || '') + '(クリックで削除)';
+    g.appendChild(titleEl);
+
+    g.addEventListener('click', function(e){
+      e.stopPropagation();
+      g.remove();
+    });
+
+    pinsLayer.appendChild(g);
+  }
+
+  function panTo(x, y){
+    vb.x = x - vb.w / 2;
+    vb.y = y - vb.h / 2;
+    updateViewBox();
+  }
+
+  function geocodeAddress(query){
+    var url = 'https://msearch.gsi.go.jp/address-search/AddressSearch?q=' + encodeURIComponent(query);
+    return fetch(url).then(function(res){
+      if(!res.ok) throw new Error('network error');
+      return res.json();
+    });
+  }
+
+  var addressInput = document.getElementById('addressInput');
+  var addPinBtn = document.getElementById('addPinBtn');
+
+  function runAddPin(){
+    var query = addressInput.value.trim();
+    if(!query) return;
+    addPinBtn.disabled = true;
+    var origText = addPinBtn.textContent;
+    addPinBtn.textContent = '検索中...';
+    geocodeAddress(query).then(function(results){
+      if(!results || !results.length){
+        alert('住所が見つかりませんでした。表記を変えて試してみてください。');
+        return;
+      }
+      var top = results[0];
+      var lon = top.geometry.coordinates[0];
+      var lat = top.geometry.coordinates[1];
+      var xy = lonLatToXY(lon, lat);
+      addPinAt(xy.x, xy.y, query);
+      panTo(xy.x, xy.y);
+    }).catch(function(){
+      alert('住所検索に失敗しました。通信状況を確認してもう一度試してください。');
+    }).finally(function(){
+      addPinBtn.disabled = false;
+      addPinBtn.textContent = origText;
+    });
+  }
+
+  addPinBtn.addEventListener('click', runAddPin);
+  addressInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      runAddPin();
+    }
+  });
+
+  document.getElementById('clearPinsBtn').addEventListener('click', function(){
+    while(pinsLayer.firstChild) pinsLayer.removeChild(pinsLayer.firstChild);
   });
 
   selectColor(state.color);
