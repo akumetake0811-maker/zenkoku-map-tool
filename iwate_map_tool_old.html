@@ -917,6 +917,13 @@
     updateViewBox();
   }
 
+  // 住所検索が同名の別地域(県外)にヒットしてしまうと、地図がその場所まで
+  // パンして「地図が消えた」ように見えてしまうため、明らかに範囲外なら弾く。
+  function isWithinIwateBounds(x, y){
+    var margin = SVG_W * 0.5;
+    return x > -margin && x < SVG_W + margin && y > -margin && y < SVG_H + margin;
+  }
+
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, function(c){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
@@ -1394,6 +1401,10 @@
         var lon = top.geometry.coordinates[0];
         var lat = top.geometry.coordinates[1];
         var xy = lonLatToXY(lon, lat);
+        if(!isWithinIwateBounds(xy.x, xy.y)){
+          alert('「' + (top.properties.title || query) + '」は岩手県の地図の範囲外でヒットしたようです。住所の表記(市町村名など)を変えて試してみてください。');
+          return;
+        }
         addPinAt(xy.x, xy.y, query, lon, lat);
         panTo(xy.x, xy.y);
         input.value = '';
