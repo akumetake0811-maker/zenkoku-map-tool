@@ -1353,9 +1353,14 @@
     deselectAll();
   });
 
-  // クリック位置が選択できる要素(ピン・図形・テキスト)でなければ選択解除する。
-  // テキストツールが「配置待ち」のときは、地図上のどこをクリックしても先にメモを置く。
+  // クリック位置が選択できる要素(ピン・図形・テキスト)ならそのまま選択処理に任せる。
+  // それ以外の場所をクリックしたときだけ、テキストツールが「配置待ち」ならメモを置き、
+  // そうでなければ選択解除する。この順序が逆だと、配置待ち中は既存の要素が選べなくなる。
   svgEl.addEventListener('click', function(e){
+    var el = e.target.closest('[data-kind]');
+    if(el){
+      return;
+    }
     if(armedTool === 'text'){
       e.stopPropagation();
       var p = clientToSvgPoint(e.clientX, e.clientY);
@@ -1365,10 +1370,7 @@
       }
       return;
     }
-    var el = e.target.closest('[data-kind]');
-    if(!el){
-      deselectAll();
-    }
+    deselectAll();
   }, true);
 
   // ---- ① 📍 住所でピンを立てる ----
