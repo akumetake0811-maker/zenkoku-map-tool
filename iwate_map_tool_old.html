@@ -132,6 +132,8 @@
     fill:#eef0e8;
     stroke:#6b6355;
     stroke-width:0.7;
+    stroke-linejoin:round;
+    stroke-linecap:round;
     cursor:pointer;
     transition:fill 0.15s ease;
   }
@@ -143,6 +145,8 @@
     stroke:#c0392b;
     stroke-width:0.9;
     stroke-dasharray:2.5,2;
+    stroke-linejoin:round;
+    stroke-linecap:round;
     cursor:pointer;
     pointer-events:all;
     transition:fill 0.15s ease;
@@ -833,8 +837,8 @@
     var scaleNum = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--label-scale')) || 1;
     var styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
     styleEl.textContent =
-      '.muni.cur{fill:#eef0e8;stroke:#6b6355;stroke-width:0.7;}' +
-      '.muni.old{fill:transparent;stroke:#c0392b;stroke-width:0.9;stroke-dasharray:2.5,2;}' +
+      '.muni.cur{fill:#eef0e8;stroke:#6b6355;stroke-width:0.7;stroke-linejoin:round;stroke-linecap:round;}' +
+      '.muni.old{fill:transparent;stroke:#c0392b;stroke-width:0.9;stroke-dasharray:2.5,2;stroke-linejoin:round;stroke-linecap:round;}' +
       '.label{text-anchor:middle;dominant-baseline:middle;font-family:"Hiragino Maru Gothic ProN","BIZ UDPGothic","Yu Gothic","Meiryo",sans-serif;paint-order:stroke;stroke:#fdfcf8;stroke-linejoin:round;}' +
       '.label.cur{font-size:' + (16 * scaleNum) + 'px;font-weight:600;fill:#4a4238;stroke-width:' + (2.4 * scaleNum) + 'px;}' +
       '.label.old{font-size:' + (10 * scaleNum) + 'px;font-weight:600;fill:#a8321f;stroke-width:' + (2.4 * scaleNum) + 'px;}' +
