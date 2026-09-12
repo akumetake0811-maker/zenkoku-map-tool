@@ -88,7 +88,7 @@ def douglas_peucker(points, epsilon):
         return [points[0], points[-1]]
 
 
-EPSILON = 1.8  # 川・道路は輪郭線ほどの精度が要らないので少し粗めに間引く
+EPSILON = 0.25  # 川・道路は輪郭線ほどの精度が要らないので少し粗めに間引く
 
 
 def line_to_path_pieces(lonlat_points):
