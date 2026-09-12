@@ -941,7 +941,10 @@
   var shapesData = [];
   var textsData = [];
   var idSeq = 0;
-  var pinSizeMultiplier = 1;
+  var nextPinSize = 1;
+  var nextPinShape = 'teardrop';
+  var PIN_SHAPES = ['teardrop', 'circle', 'flag', 'star'];
+  var PIN_SHAPE_LABELS = {teardrop: '📍 ピン型', circle: '⚫ 丸型', flag: '🚩 旗型', star: '⭐ 星型'};
   var selected = null; // {kind:'pin'|'shape'|'text', id}
   var activeTool = null; // 'pin'|'dist'|'route'|'circle'|'text'|null
   var armedTool = null;  // 'text' のときだけ、地図クリックで配置する
@@ -971,36 +974,98 @@
   }
 
   // ---- ピン ----
-  // ピンの見た目を作るだけの純粋な描画関数。ピンの大きさスライダー(pinSizeMultiplier)や
-  // 色を変えたときに全ピンを作り直せるよう、データの登録(pinsData)とは分離してある。
-  function buildPinGroup(x, y, label, color){
-    var s = 20 * pinSizeMultiplier;
-    var halfW = s * 0.9;
-    var bodyH = s * 1.9;
+  // ピンの見た目を作るだけの純粋な描画関数。色・大きさ・形はすべてピンごとのデータ(p.color/p.size/p.shape)
+  // から決まるので、1本のピンだけを作り直したいときはこれをもう一度呼べばよい。
+  function starPathD(cx, cy, outerR, innerR){
+    var points = [];
+    for(var i = 0; i < 10; i++){
+      var r = (i % 2 === 0) ? outerR : innerR;
+      var angle = -Math.PI / 2 + i * Math.PI / 5;
+      points.push((cx + r * Math.cos(angle)).toFixed(2) + ',' + (cy + r * Math.sin(angle)).toFixed(2));
+    }
+    return 'M' + points.join(' L') + ' Z';
+  }
+
+  function buildPinGroup(p){
+    var x = p.x, y = p.y, label = p.label, color = p.color;
+    var shapeType = p.shape || 'teardrop';
+    var s = 20 * (p.size || 1);
 
     var g = document.createElementNS(SVGNS, 'g');
     g.setAttribute('class', 'pin');
 
-    var shape = document.createElementNS(SVGNS, 'path');
-    var d = 'M' + x + ',' + y +
-      ' C' + (x - halfW) + ',' + (y - bodyH * 0.37) + ' ' + (x - halfW) + ',' + (y - bodyH) + ' ' + x + ',' + (y - bodyH) +
-      ' C' + (x + halfW) + ',' + (y - bodyH) + ' ' + (x + halfW) + ',' + (y - bodyH * 0.37) + ' ' + x + ',' + y + ' Z';
-    shape.setAttribute('d', d);
-    shape.setAttribute('class', 'pinShape');
-    if(color) shape.style.fill = color;
-    g.appendChild(shape);
+    var anchorY;
+    if(shapeType === 'circle'){
+      var circle = document.createElementNS(SVGNS, 'circle');
+      circle.setAttribute('cx', x);
+      circle.setAttribute('cy', y);
+      circle.setAttribute('r', s * 0.75);
+      circle.setAttribute('class', 'pinShape');
+      if(color) circle.style.fill = color;
+      g.appendChild(circle);
+      var dot = document.createElementNS(SVGNS, 'circle');
+      dot.setAttribute('cx', x);
+      dot.setAttribute('cy', y);
+      dot.setAttribute('r', s * 0.25);
+      dot.setAttribute('class', 'pinHole');
+      g.appendChild(dot);
+      anchorY = y - s * 0.75 - s * 0.3;
+    } else if(shapeType === 'flag'){
+      var pole = document.createElementNS(SVGNS, 'line');
+      pole.setAttribute('x1', x);
+      pole.setAttribute('y1', y);
+      pole.setAttribute('x2', x);
+      pole.setAttribute('y2', y - s * 1.9);
+      pole.setAttribute('stroke', '#5a5142');
+      pole.setAttribute('stroke-width', Math.max(1.5, s * 0.09));
+      g.appendChild(pole);
+      var flag = document.createElementNS(SVGNS, 'path');
+      flag.setAttribute('d',
+        'M' + x + ',' + (y - s * 1.9) +
+        ' L' + (x + s * 1.3) + ',' + (y - s * 1.55) +
+        ' L' + x + ',' + (y - s * 1.2) + ' Z');
+      flag.setAttribute('class', 'pinShape');
+      if(color) flag.style.fill = color;
+      g.appendChild(flag);
+      anchorY = y - s * 1.9 - s * 0.3;
+    } else if(shapeType === 'star'){
+      var star = document.createElementNS(SVGNS, 'path');
+      star.setAttribute('d', starPathD(x, y, s * 0.9, s * 0.38));
+      star.setAttribute('class', 'pinShape');
+      if(color) star.style.fill = color;
+      g.appendChild(star);
+      var starDot = document.createElementNS(SVGNS, 'circle');
+      starDot.setAttribute('cx', x);
+      starDot.setAttribute('cy', y);
+      starDot.setAttribute('r', s * 0.15);
+      starDot.setAttribute('class', 'pinHole');
+      g.appendChild(starDot);
+      anchorY = y - s * 0.9 - s * 0.3;
+    } else {
+      var halfW = s * 0.9;
+      var bodyH = s * 1.9;
+      var shape = document.createElementNS(SVGNS, 'path');
+      var d = 'M' + x + ',' + y +
+        ' C' + (x - halfW) + ',' + (y - bodyH * 0.37) + ' ' + (x - halfW) + ',' + (y - bodyH) + ' ' + x + ',' + (y - bodyH) +
+        ' C' + (x + halfW) + ',' + (y - bodyH) + ' ' + (x + halfW) + ',' + (y - bodyH * 0.37) + ' ' + x + ',' + y + ' Z';
+      shape.setAttribute('d', d);
+      shape.setAttribute('class', 'pinShape');
+      if(color) shape.style.fill = color;
+      g.appendChild(shape);
 
-    var hole = document.createElementNS(SVGNS, 'circle');
-    hole.setAttribute('cx', x);
-    hole.setAttribute('cy', y - bodyH * 0.68);
-    hole.setAttribute('r', s * 0.35);
-    hole.setAttribute('class', 'pinHole');
-    g.appendChild(hole);
+      var hole = document.createElementNS(SVGNS, 'circle');
+      hole.setAttribute('cx', x);
+      hole.setAttribute('cy', y - bodyH * 0.68);
+      hole.setAttribute('r', s * 0.35);
+      hole.setAttribute('class', 'pinHole');
+      g.appendChild(hole);
+      anchorY = y - bodyH - s * 0.4;
+    }
 
     if(label){
       var text = document.createElementNS(SVGNS, 'text');
       text.setAttribute('x', x);
-      text.setAttribute('y', y - bodyH - s * 0.4);
+      text.setAttribute('y', anchorY);
       text.setAttribute('class', 'pinLabel');
       text.style.fontSize = (s * 0.75) + 'px';
       text.textContent = label;
@@ -1015,7 +1080,9 @@
   }
 
   function attachPinNode(p){
-    var g = buildPinGroup(p.x, p.y, p.label, p.color);
+    if(p.size == null) p.size = 1;
+    if(!p.shape) p.shape = 'teardrop';
+    var g = buildPinGroup(p);
     g.setAttribute('data-kind', 'pin');
     g.setAttribute('data-id', p.id);
     g.addEventListener('click', function(e){
@@ -1025,9 +1092,19 @@
     pinsLayer.appendChild(g);
   }
 
+  function refreshPinNode(id){
+    var p = findPin(id);
+    if(!p) return;
+    var node = findElementNode('pin', id);
+    if(node) node.remove();
+    attachPinNode(p);
+    var newNode = findElementNode('pin', id);
+    if(newNode) newNode.classList.add('selected');
+  }
+
   function addPinAt(x, y, label, lon, lat){
     idSeq++;
-    var p = {id: idSeq, x: x, y: y, lon: lon, lat: lat, label: label, color: PIN_COLOR_DEFAULT};
+    var p = {id: idSeq, x: x, y: y, lon: lon, lat: lat, label: label, color: PIN_COLOR_DEFAULT, size: nextPinSize, shape: nextPinShape};
     pinsData.push(p);
     attachPinNode(p);
     refreshOpenToolPanel();
@@ -1048,11 +1125,6 @@
     pinsData = [];
     refreshOpenToolPanel();
     saveAnnotations();
-  }
-
-  function redrawAllPins(){
-    while(pinsLayer.firstChild) pinsLayer.removeChild(pinsLayer.firstChild);
-    pinsData.forEach(attachPinNode);
   }
 
   function geocodeAddress(query){
@@ -1091,10 +1163,47 @@
     var g = buildTextNode(t);
     g.setAttribute('data-kind', 'text');
     g.setAttribute('data-id', t.id);
-    g.addEventListener('click', function(e){
+
+    // クリック(選択)とドラッグ(移動)を区別する: 動いた量が閾値未満なら選択、
+    // 閾値を超えたら移動として扱い、確定時にlocalStorageへ保存する。
+    var dragState = null;
+    g.addEventListener('pointerdown', function(e){
+      if(e.button !== 0) return;
       e.stopPropagation();
-      selectElement('text', t.id, g);
+      dragState = {
+        startClientX: e.clientX, startClientY: e.clientY,
+        startX: t.x, startY: t.y, moved: false
+      };
+      try{ g.setPointerCapture(e.pointerId); }catch(err){}
     });
+    g.addEventListener('pointermove', function(e){
+      if(!dragState) return;
+      var scale = vb.w / svgEl.clientWidth;
+      var dx = (e.clientX - dragState.startClientX) * scale;
+      var dy = (e.clientY - dragState.startClientY) * scale;
+      if(Math.abs(dx) > 2 || Math.abs(dy) > 2) dragState.moved = true;
+      if(dragState.moved){
+        t.x = dragState.startX + dx;
+        t.y = dragState.startY + dy;
+        var textEl = g.querySelector('text');
+        textEl.setAttribute('x', t.x);
+        textEl.setAttribute('y', t.y);
+      }
+    });
+    function endDrag(e){
+      if(!dragState) return;
+      var wasMoved = dragState.moved;
+      dragState = null;
+      try{ g.releasePointerCapture(e.pointerId); }catch(err){}
+      if(wasMoved){
+        saveAnnotations();
+      } else {
+        selectElement('text', t.id, g);
+      }
+    }
+    g.addEventListener('pointerup', endDrag);
+    g.addEventListener('pointercancel', endDrag);
+
     textsLayer.appendChild(g);
   }
 
@@ -1379,13 +1488,18 @@
 
   // ---- ① 📍 住所でピンを立てる ----
   function pinPanelHtml(){
+    var shapeOptions = PIN_SHAPES.map(function(s){
+      return '<option value="' + s + '"' + (s === nextPinShape ? ' selected' : '') + '>' + PIN_SHAPE_LABELS[s] + '</option>';
+    }).join('');
     return '<h3>📍 住所でピンを立てる</h3>' +
       '<div class="addrRow"><input type="text" id="pAddressInput" placeholder="例: 盛岡市内丸10-1">' +
       '<button class="toolbtn" id="pAddPinBtn">追加</button></div>' +
-      '<p class="hint" style="margin:4px 0 8px;">住所や施設名を入力すると地図上に印がつきます(国土地理院の住所検索を利用)。ピンをクリックすると色を変えたり削除したりできます。</p>' +
-      '<div class="sliderRow"><label for="pPinSizeSlider" class="sliderLabel">大きさ</label>' +
-      '<input type="range" id="pPinSizeSlider" min="0.6" max="2.5" step="0.1" value="' + pinSizeMultiplier + '">' +
-      '<span id="pPinSizeValue">' + Math.round(pinSizeMultiplier * 100) + '%</span></div>' +
+      '<p class="hint" style="margin:4px 0 8px;">住所や施設名を入力すると地図上に印がつきます(国土地理院の住所検索を利用)。ピンをクリックすると色・大きさ・形を変えたり削除したりできます。</p>' +
+      '<label class="hint" style="display:block;margin:0 0 4px;">次に置くピンの形</label>' +
+      '<select id="pPinShapeSelect">' + shapeOptions + '</select>' +
+      '<div class="sliderRow" style="margin-top:8px;"><label for="pPinSizeSlider" class="sliderLabel">大きさ</label>' +
+      '<input type="range" id="pPinSizeSlider" min="0.6" max="2.5" step="0.1" value="' + nextPinSize + '">' +
+      '<span id="pPinSizeValue">' + Math.round(nextPinSize * 100) + '%</span></div>' +
       '<button class="toolbtn" id="pClearPinsBtn" style="margin-top:8px;">🗑 ピンを全部消す</button>';
   }
 
@@ -1426,10 +1540,11 @@
       if(e.key === 'Enter'){ e.preventDefault(); run(); }
     });
     document.getElementById('pPinSizeSlider').addEventListener('input', function(e){
-      pinSizeMultiplier = parseFloat(e.target.value);
-      document.getElementById('pPinSizeValue').textContent = Math.round(pinSizeMultiplier * 100) + '%';
-      redrawAllPins();
-      saveAnnotations();
+      nextPinSize = parseFloat(e.target.value);
+      document.getElementById('pPinSizeValue').textContent = Math.round(nextPinSize * 100) + '%';
+    });
+    document.getElementById('pPinShapeSelect').addEventListener('change', function(e){
+      nextPinShape = e.target.value;
     });
     document.getElementById('pClearPinsBtn').addEventListener('click', function(){
       if(pinsData.length && confirm('ピンを全部消しますか?')) clearAllPins();
@@ -1439,9 +1554,16 @@
   function pinPropsHtml(id){
     var p = findPin(id);
     if(!p) return '';
+    var shapeOptions = PIN_SHAPES.map(function(s){
+      return '<option value="' + s + '"' + (s === (p.shape || 'teardrop') ? ' selected' : '') + '>' + PIN_SHAPE_LABELS[s] + '</option>';
+    }).join('');
     return '<h3>📍 ' + escapeHtml(p.label || ('ピン#' + p.id)) + '</h3>' +
       '<label class="hint" style="display:block;margin:0 0 4px;">色</label>' +
       '<input type="color" id="sPinColor" value="' + p.color + '">' +
+      '<label class="hint" style="display:block;margin:10px 0 4px;">形</label>' +
+      '<select id="sPinShape">' + shapeOptions + '</select>' +
+      '<label class="hint" style="display:block;margin:10px 0 4px;">大きさ</label>' +
+      '<input type="range" id="sPinSize" min="0.6" max="2.5" step="0.1" value="' + (p.size || 1) + '">' +
       '<button class="toolbtn" id="sPinDeleteBtn" style="margin-top:12px;">🗑 このピンを削除</button>';
   }
 
@@ -1450,9 +1572,21 @@
       var p = findPin(id);
       if(!p) return;
       p.color = e.target.value;
-      redrawAllPins();
-      var node = findElementNode('pin', id);
-      if(node) node.classList.add('selected');
+      refreshPinNode(id);
+      saveAnnotations();
+    });
+    document.getElementById('sPinShape').addEventListener('change', function(e){
+      var p = findPin(id);
+      if(!p) return;
+      p.shape = e.target.value;
+      refreshPinNode(id);
+      saveAnnotations();
+    });
+    document.getElementById('sPinSize').addEventListener('input', function(e){
+      var p = findPin(id);
+      if(!p) return;
+      p.size = parseFloat(e.target.value);
+      refreshPinNode(id);
       saveAnnotations();
     });
     document.getElementById('sPinDeleteBtn').addEventListener('click', function(){
