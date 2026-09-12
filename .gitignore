@@ -3,6 +3,7 @@ geojson/
 data/
 muni_master.xlsx
 _gis_source/
+_gis_source_extra/
 
 # 作業ゴミ
 削除用フォルダ/
