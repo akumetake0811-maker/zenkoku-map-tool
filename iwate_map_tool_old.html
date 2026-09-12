@@ -1172,13 +1172,23 @@
     var node = findElementNode('pin', id);
     if(node) node.remove();
     pinsData = pinsData.filter(function(p){ return p.id !== id; });
+    // このピンを使っている距離線・ルート・円は、ピンが無くなると意味を持たなくなるので
+    // 一緒に消す(ラベルの削除はdeleteShape内でカスケードされる)。
+    shapesData.filter(function(s){ return s.pinIds && s.pinIds.indexOf(id) !== -1; })
+      .map(function(s){ return s.id; })
+      .forEach(deleteShape);
     refreshOpenToolPanel();
     saveAnnotations();
   }
 
   function clearAllPins(){
+    var removedIds = {};
+    pinsData.forEach(function(p){ removedIds[p.id] = true; });
     while(pinsLayer.firstChild) pinsLayer.removeChild(pinsLayer.firstChild);
     pinsData = [];
+    shapesData.filter(function(s){
+      return s.pinIds && s.pinIds.some(function(pid){ return removedIds[pid]; });
+    }).map(function(s){ return s.id; }).forEach(deleteShape);
     refreshOpenToolPanel();
     saveAnnotations();
   }
@@ -1388,7 +1398,7 @@
     idSeq++;
     var km = haversineKm(a.lat, a.lon, b.lat, b.lon);
     var shape = {id: idSeq, kind: 'line', color: '#2d6a8f', width: 3, dashed: true,
-      points: [{x: a.x, y: a.y}, {x: b.x, y: b.y}]};
+      points: [{x: a.x, y: a.y}, {x: b.x, y: b.y}], pinIds: [a.id, b.id]};
     shapesData.push(shape);
     attachShapeNode(shape);
     addTextAt((a.x + b.x) / 2, (a.y + b.y) / 2 - 10, km.toFixed(1) + ' km',
@@ -1404,7 +1414,7 @@
     }
     idSeq++;
     var shape = {id: idSeq, kind: 'route', color: '#3a7d44', width: 3, dashed: false,
-      points: pins.map(function(p){ return {x: p.x, y: p.y}; })};
+      points: pins.map(function(p){ return {x: p.x, y: p.y}; }), pinIds: pins.map(function(p){ return p.id; })};
     shapesData.push(shape);
     attachShapeNode(shape);
     var last = pins[pins.length - 1];
@@ -1417,7 +1427,7 @@
   function createCircleShape(center, radiusKm){
     idSeq++;
     var shape = {id: idSeq, kind: 'circle', color: '#2d6a8f', width: 2.5, dashed: true,
-      center: {x: center.x, y: center.y}, radiusKm: radiusKm};
+      center: {x: center.x, y: center.y}, radiusKm: radiusKm, pinIds: [center.id]};
     shapesData.push(shape);
     attachShapeNode(shape);
     var r = radiusKm * UNITS_PER_KM;
